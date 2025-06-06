@@ -33,55 +33,82 @@ class OpenAICompatibleProvider implements LLMProviderClient {
 
   constructor(provider: LLMProvider) {
     this.provider = provider;
+    const apiKey = getProviderApiKey(provider);
+    const baseURL = getProviderBaseUrl(provider);
+    
+    // Validate API key exists for cloud providers
+    if (!apiKey) {
+      throw new Error(`API key not found for provider ${provider}. Please configure the appropriate environment variable.`);
+    }
+    
     this.client = new OpenAI({
-      apiKey: getProviderApiKey(provider) || '',
-      baseURL: getProviderBaseUrl(provider),
+      apiKey: apiKey,
+      baseURL: baseURL,
     });
   }
 
   async getModels() {
-    const response = await this.client.models.list();
+    try {
+      const response = await this.client.models.list();
 
-    // Remove duplicates based on model ID
-    const uniqueModels = Array.from(
-      new Map(response.data.map(model => [model.id, model])).values()
-    );
+      // Remove duplicates based on model ID
+      const uniqueModels = Array.from(
+        new Map(response.data.map(model => [model.id, model])).values()
+      );
 
-    return uniqueModels.map((model) => ({
-      id: model.id,
-      name: model.id,
-    }));
+      return uniqueModels.map((model) => ({
+        id: model.id,
+        name: model.id,
+      }));
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('401')) {
+        throw new Error(`Authentication failed for ${this.provider}. Please check your API key.`);
+      }
+      throw error;
+    }
   }
 
   async generateCode(prompt: string, model: string, customSystemPrompt?: string | null, maxTokens?: number) {
     // Use custom system prompt if provided, otherwise use default
     const systemPromptToUse = customSystemPrompt || SYSTEM_PROMPT;
 
-    const stream = await this.client.chat.completions.create({
-      model,
-      messages: [
-        { role: 'system', content: systemPromptToUse },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: maxTokens || undefined, // Use maxTokens if provided, otherwise let the API decide
-      stream: true,
-    });
+    try {
+      const stream = await this.client.chat.completions.create({
+        model,
+        messages: [
+          { role: 'system', content: systemPromptToUse },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: maxTokens || undefined, // Use maxTokens if provided, otherwise let the API decide
+        stream: true,
+      });
 
-    // Create a ReadableStream for the response
-    const textEncoder = new TextEncoder();
-    return new ReadableStream({
-      async start(controller) {
-        // Process the stream from OpenAI
-        for await (const chunk of stream) {
-          // Extract the text from the chunk
-          const content = chunk.choices[0]?.delta?.content || '';
+      // Create a ReadableStream for the response
+      const textEncoder = new TextEncoder();
+      return new ReadableStream({
+        async start(controller) {
+          try {
+            // Process the stream from OpenAI
+            for await (const chunk of stream) {
+              // Extract the text from the chunk
+              const content = chunk.choices[0]?.delta?.content || '';
 
-          // Send the text to the client
-          controller.enqueue(textEncoder.encode(content));
-        }
-        controller.close();
-      },
-    });
+              // Send the text to the client
+              controller.enqueue(textEncoder.encode(content));
+            }
+            controller.close();
+          } catch (error) {
+            console.error('Error in stream processing:', error);
+            controller.error(error);
+          }
+        },
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('401')) {
+        throw new Error(`Authentication failed for ${this.provider}. Please check your API key.`);
+      }
+      throw error;
+    }
   }
 }
 
@@ -211,30 +238,40 @@ class LMStudioProvider implements LLMProviderClient {
     // Use custom system prompt if provided, otherwise use default
     const systemPromptToUse = customSystemPrompt || SYSTEM_PROMPT;
 
-    const stream = await this.client.chat.completions.create({
-      model,
-      messages: [
-        { role: 'system', content: systemPromptToUse },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: maxTokens || undefined, // Use maxTokens if provided, otherwise let the API decide
-      stream: true,
-    });
+    try {
+      const stream = await this.client.chat.completions.create({
+        model,
+        messages: [
+          { role: 'system', content: systemPromptToUse },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: maxTokens || undefined, // Use maxTokens if provided, otherwise let the API decide
+        stream: true,
+      });
 
-    // Create a ReadableStream for the response
-    const textEncoder = new TextEncoder();
-    return new ReadableStream({
-      async start(controller) {
-        // Process the stream from OpenAI
-        for await (const chunk of stream) {
-          // Extract the text from the chunk
-          const content = chunk.choices[0]?.delta?.content || '';
+      // Create a ReadableStream for the response
+      const textEncoder = new TextEncoder();
+      return new ReadableStream({
+        async start(controller) {
+          try {
+            // Process the stream from OpenAI
+            for await (const chunk of stream) {
+              // Extract the text from the chunk
+              const content = chunk.choices[0]?.delta?.content || '';
 
-          // Send the text to the client
-          controller.enqueue(textEncoder.encode(content));
-        }
-        controller.close();
-      },
-    });
+              // Send the text to the client
+              controller.enqueue(textEncoder.encode(content));
+            }
+            controller.close();
+          } catch (error) {
+            console.error('Error in LM Studio stream processing:', error);
+            controller.error(error);
+          }
+        },
+      });
+    } catch (error) {
+      console.error('Error generating code with LM Studio:', error);
+      throw error;
+    }
   }
 }

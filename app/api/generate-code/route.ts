@@ -28,6 +28,21 @@ export async function POST(request: NextRequest) {
       provider = (process.env.DEFAULT_PROVIDER as LLMProvider) || LLMProvider.DEEPSEEK;
     }
 
+    // Validate provider configuration before creating client
+    if (provider === LLMProvider.DEEPSEEK && !process.env.DEEPSEEK_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: 'DeepSeek API key is not configured. Please set DEEPSEEK_API_KEY in your environment variables.' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (provider === LLMProvider.OPENAI_COMPATIBLE && !process.env.OPENAI_COMPATIBLE_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: 'OpenAI Compatible API key is not configured. Please set OPENAI_COMPATIBLE_API_KEY in your environment variables.' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Create the provider client
     const providerClient = createProviderClient(provider);
 
@@ -45,7 +60,16 @@ export async function POST(request: NextRequest) {
     console.error('Error generating code:', error);
 
     // Return a more specific error message if available
-    const errorMessage = error instanceof Error ? error.message : 'Error generating code';
+    let errorMessage = 'Error generating code';
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      
+      // Handle specific authentication errors
+      if (error.message.includes('401') || error.message.includes('No auth credentials')) {
+        errorMessage = 'Authentication failed. Please check your API key configuration.';
+      }
+    }
 
     return new Response(
       JSON.stringify({ error: errorMessage }),
