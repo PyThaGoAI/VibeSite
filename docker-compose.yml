@@ -12,12 +12,12 @@ services:
       # Choose the default provider (deepseek, openai_compatible, ollama, or lm_studio)
       - DEFAULT_PROVIDER=openai_compatible
       
-      # DeepSeek Configuration
-      - DEEPSEEK_API_KEY=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
+      # DeepSeek Configuration - REPLACE WITH YOUR ACTUAL OPENROUTER API KEY
+      - DEEPSEEK_API_KEY=YOUR_OPENROUTER_API_KEY_HERE
       - DEEPSEEK_API_BASE=https://openrouter.ai/api/v1
       
-      # OpenAI Compatible Configuration
-      - OPENAI_COMPATIBLE_API_KEY=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
+      # OpenAI Compatible Configuration - REPLACE WITH YOUR ACTUAL OPENROUTER API KEY
+      - OPENAI_COMPATIBLE_API_KEY=YOUR_OPENROUTER_API_KEY_HERE
       - OPENAI_COMPATIBLE_API_BASE=https://openrouter.ai/api/v1
     # volumes:
     #   - ./:/app
