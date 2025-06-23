@@ -2,27 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
 :root {
-  --background: 0 0% 3.9%;
+  /* Premium Color Palette */
+  --background: 0 0% 2%;
   --foreground: 0 0% 98%;
-  --card: 0 0% 3.9%;
+  --card: 0 0% 3%;
   --card-foreground: 0 0% 98%;
-  --popover: 0 0% 3.9%;
+  --popover: 0 0% 3%;
   --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 100%;
-  --primary-foreground: 0 0% 0%;
-  --secondary: 240 3.7% 15.9%;
+  --primary: 280 100% 70%;
+  --primary-foreground: 0 0% 2%;
+  --secondary: 240 5% 8%;
   --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 14.9%;
-  --muted-foreground: 0 0% 63.9%;
-  --accent: 0 0% 100%;
-  --accent-foreground: 0 0% 9%;
-  --destructive: 0 62.8% 30.6%;
+  --muted: 240 5% 6%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 280 100% 70%;
+  --accent-foreground: 0 0% 2%;
+  --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --ring: 0 0% 80%;
-  --radius: 0.5rem;
+  --border: 240 6% 10%;
+  --input: 240 6% 10%;
+  --ring: 280 100% 70%;
+  --radius: 0.75rem;
+  
+  /* Premium Gradients */
+  --gradient-primary: linear-gradient(135deg, #8B5CF6 0%, #A855F7 50%, #C084FC 100%);
+  --gradient-secondary: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+  --gradient-accent: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #A855F7 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+  
+  /* Shadows */
+  --shadow-premium: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --shadow-glow: 0 0 50px rgba(139, 92, 246, 0.3);
 }
 
 * {
@@ -31,43 +46,281 @@
 
 body {
   @apply bg-background text-foreground;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-feature-settings: "rlig" 1, "calt" 1;
+  background: radial-gradient(ellipse at top, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+              radial-gradient(ellipse at bottom, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+              #020202;
 }
 
-/* Custom scrollbar */
+/* Premium Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #111;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 4px;
+  background: linear-gradient(135deg, #8B5CF6, #A855F7);
+  border-radius: 3px;
+  transition: all 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #444;
+  background: linear-gradient(135deg, #A855F7, #C084FC);
 }
 
-/* Tech Button Styles */
-.tech-button:hover {
-  box-shadow: 0 0 20px rgba(42, 87, 139, 0.6), inset 0 1px 2px rgba(135, 207, 255, 0.2), inset 0 -1px 2px rgba(0, 0, 0, 0.3);
+/* Glass Morphism Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-glass);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Premium Button Styles */
+.btn-premium {
+  position: relative;
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.btn-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-premium:hover::before {
+  opacity: 1;
+}
+
+.btn-premium:hover {
   transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(139, 92, 246, 0.4);
 }
 
-.tech-button:active {
+.btn-premium:active {
   transform: translateY(0);
-  box-shadow: 0 0 10px rgba(42, 87, 139, 0.4), inset 0 2px 3px rgba(0, 0, 0, 0.4), inset 0 -1px 1px rgba(135, 207, 255, 0.1);
 }
 
-.tech-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Floating Animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
-/* Import Roboto font for tech button */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Premium Card */
+.premium-card {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 16px;
+  box-shadow: var(--shadow-premium);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:hover {
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: var(--shadow-premium), var(--shadow-glow);
+  transform: translateY(-4px);
+}
+
+/* Neon Glow Effect */
+.neon-glow {
+  box-shadow: 
+    0 0 5px rgba(139, 92, 246, 0.5),
+    0 0 10px rgba(139, 92, 246, 0.4),
+    0 0 15px rgba(139, 92, 246, 0.3),
+    0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+/* Loading Animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.8);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Typing Animation Enhanced */
+@keyframes typing-premium {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink-premium {
+  0%, 50% { border-color: #8B5CF6; }
+  51%, 100% { border-color: transparent; }
+}
+
+.typing-premium {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid #8B5CF6;
+  animation: 
+    typing-premium 2s steps(40, end),
+    blink-premium 1s step-end infinite;
+}
+
+/* Code Editor Enhancements */
+.monaco-editor {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+}
+
+/* Premium Input Styles */
+.input-premium {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.input-premium:focus {
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+/* Particle Background */
+.particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(139, 92, 246, 0.6);
+  border-radius: 50%;
+  animation: particle-float 20s linear infinite;
+}
+
+@keyframes particle-float {
+  0% {
+    transform: translateY(100vh) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(100px);
+    opacity: 0;
+  }
+}
+
+/* Status Indicators */
+.status-online {
+  position: relative;
+}
+
+.status-online::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: #10B981;
+  border-radius: 50%;
+  border: 2px solid #020202;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .premium-card {
+    border-radius: 12px;
+    margin: 8px;
+  }
+  
+  .btn-premium {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .glass {
+    backdrop-filter: blur(25px);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .float,
+  .pulse-glow,
+  .particle {
+    animation: none;
+  }
+  
+  .btn-premium:hover {
+    transform: none;
+  }
+}

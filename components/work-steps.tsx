@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-// Import only the icons that are actually used
-import { CheckCircle, Circle, Loader2 } from "lucide-react"
+import { CheckCircle, Circle, Loader2, Code2, Palette, Zap, Settings, Sparkles, Eye } from "lucide-react"
 
 interface WorkStepsProps {
   isGenerating: boolean
@@ -13,27 +12,34 @@ interface WorkStepsProps {
 interface Step {
   id: string
   label: string
+  icon: any
   detector: (code: string) => boolean
   completed: boolean
+  color: string
 }
 
 export function WorkSteps({ isGenerating, generationComplete, generatedCode = "" }: WorkStepsProps) {
   const [steps, setSteps] = useState<Step[]>([
     {
       id: "init",
-      label: "Initializing model...",
-      detector: () => true, // Always completed as soon as code is generated
-      completed: false
+      label: "Initializing AI engine...",
+      icon: Sparkles,
+      detector: () => true,
+      completed: false,
+      color: "from-purple-500 to-pink-500"
     },
     {
       id: "html_structure",
-      label: "Generating HTML structure...",
+      label: "Building HTML structure...",
+      icon: Code2,
       detector: (code) => code.includes("<html") || code.includes("<body") || code.includes("<head"),
-      completed: false
+      completed: false,
+      color: "from-blue-500 to-cyan-500"
     },
     {
       id: "content",
-      label: "Adding content...",
+      label: "Adding content elements...",
+      icon: Eye,
       detector: (code) =>
         code.includes("<div") ||
         code.includes("<p") ||
@@ -42,20 +48,22 @@ export function WorkSteps({ isGenerating, generationComplete, generatedCode = ""
         code.includes("<img") ||
         code.includes("<ul") ||
         code.includes("<section"),
-      completed: false
+      completed: false,
+      color: "from-green-500 to-emerald-500"
     },
     {
       id: "styles",
-      label: "Adding styles...",
+      label: "Applying beautiful styles...",
+      icon: Palette,
       detector: (code) => code.includes("<style") || code.includes("class=") || code.includes("style="),
-      completed: false
+      completed: false,
+      color: "from-orange-500 to-red-500"
     },
     {
       id: "javascript",
-      label: "Implementing JavaScript...",
-      // Detects if JavaScript is present in the code, but stays active as long as the LLM is still writing JavaScript
+      label: "Implementing interactions...",
+      icon: Zap,
       detector: (code) => {
-        // Check if JavaScript elements are present
         const hasJavaScript = code.includes("<script") ||
                              code.includes("function") ||
                              code.includes("addEventListener") ||
@@ -65,85 +73,104 @@ export function WorkSteps({ isGenerating, generationComplete, generatedCode = ""
                              code.includes("let ") ||
                              code.includes("var ");
 
-        // If no JavaScript is present, the step is not completed
         if (!hasJavaScript) return false;
-
-        // If generation is complete, the step is completed
         if (generationComplete) return true;
 
-        // Check if the code ends with a closing script tag or if JavaScript is still being written
         const scriptTagsCount = (code.match(/<script/g) || []).length;
         const closingScriptTagsCount = (code.match(/<\/script>/g) || []).length;
 
-        // If all script tags are closed and the code doesn't end with JavaScript code,
-        // then the step is completed
         return scriptTagsCount === closingScriptTagsCount &&
                !code.trim().endsWith("function") &&
                !code.trim().endsWith("{") &&
                !code.trim().endsWith(";");
       },
-      completed: false
+      completed: false,
+      color: "from-yellow-500 to-orange-500"
     },
     {
       id: "finalize",
-      label: "Finalizing...",
+      label: "Finalizing masterpiece...",
+      icon: Settings,
       detector: () => generationComplete,
-      completed: false
+      completed: false,
+      color: "from-emerald-500 to-green-500"
     }
   ]);
 
-  // Current step (the first uncompleted step)
   const currentStepIndex = steps.findIndex(step => !step.completed);
 
-  // Analyze the generated code and update the steps
   useEffect(() => {
     if (generatedCode) {
       const updatedSteps = steps.map(step => ({
         ...step,
         completed: step.detector(generatedCode)
       }));
-
       setSteps(updatedSteps);
     }
 
-    // If generation is complete, mark all steps as completed
     if (generationComplete) {
       const completedSteps = steps.map(step => ({
         ...step,
         completed: true
       }));
-
       setSteps(completedSteps);
     }
   }, [generatedCode, generationComplete]);
 
   return (
-    <div className="space-y-1.5 h-full overflow-y-auto">
+    <div className="space-y-3 h-full overflow-y-auto">
       {steps.map((step, index) => {
-        // Determine the status of the step
         const isCompleted = step.completed;
         const isCurrent = !isCompleted && (currentStepIndex === -1 || index === currentStepIndex);
+        const Icon = step.icon;
 
         return (
-          <div key={step.id} className="flex items-center gap-1.5">
-            {isCompleted ? (
-              <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-            ) : isCurrent && isGenerating ? (
-              <Loader2 className="w-4 h-4 text-blue-400 animate-spin flex-shrink-0" />
-            ) : (
-              <Circle className="w-4 h-4 text-gray-600 flex-shrink-0" />
-            )}
-            <span
-              className={`text-xs sm:text-sm ${
+          <div 
+            key={step.id} 
+            className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-300 ${
+              isCurrent 
+                ? 'glass border border-purple-500/30 scale-105' 
+                : isCompleted 
+                  ? 'bg-green-500/10 border border-green-500/20' 
+                  : 'opacity-60'
+            }`}
+          >
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              isCompleted 
+                ? 'bg-green-500' 
+                : isCurrent && isGenerating 
+                  ? `bg-gradient-to-br ${step.color}` 
+                  : 'bg-gray-700'
+            }`}>
+              {isCompleted ? (
+                <CheckCircle className="w-4 h-4 text-white" />
+              ) : isCurrent && isGenerating ? (
+                <Loader2 className="w-4 h-4 text-white animate-spin" />
+              ) : (
+                <Icon className="w-4 h-4 text-gray-400" />
+              )}
+            </div>
+            
+            <div className="flex-1">
+              <span className={`text-sm font-medium ${
                 isCompleted
-                  ? "text-gray-300"
+                  ? "text-green-400"
                   : isCurrent
-                    ? "text-white font-medium"
-                    : "text-gray-600"
-              }`}
-            >
-              {step.label}
-            </span>
+                    ? "text-white"
+                    : "text-gray-500"
+              }`}>
+                {step.label}
+              </span>
+              
+              {isCurrent && isGenerating && (
+                <div className="mt-1">
+                  <div className="w-full h-1 bg-gray-700 rounded-full overflow-hidden">
+                    <div className={`h-full bg-gradient-to-r ${step.color} rounded-full animate-pulse`} 
+                         style={{ width: '60%' }} />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         );
       })}

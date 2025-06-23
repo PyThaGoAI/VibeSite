@@ -5,8 +5,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-// Import only the icons that are actually used
-import { Loader2 } from "lucide-react"
+import { Loader2, Sparkles, Zap, Code2, Palette, Wand2, ArrowRight, Settings, Brain } from "lucide-react"
 import { toast } from "sonner"
 import { ProviderSelector } from "@/components/provider-selector"
 
@@ -46,36 +45,31 @@ export function WelcomeView({
   setMaxTokens,
   onGenerate
 }: WelcomeViewProps) {
-  const [titleClass, setTitleClass] = useState("pre-animation")
+  const [titleClass, setTitleClass] = useState("opacity-0 scale-95")
   const [models, setModels] = useState<Model[]>([])
   const [isLoadingModels, setIsLoadingModels] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   useEffect(() => {
-    // Add typing animation class after component mounts
     const timer = setTimeout(() => {
-      setTitleClass("typing-animation")
-    }, 100)
-
+      setTitleClass("opacity-100 scale-100")
+    }, 300)
     return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
-    // Load available models when the component mounts or when the provider changes
     const fetchModels = async () => {
       if (!selectedProvider) return;
 
       setIsLoadingModels(true)
-      setSelectedModel("") // Reset the selected model when the provider changes
-      setModels([]) // Clear previous models when changing provider
+      setSelectedModel("")
+      setModels([])
 
       try {
         const response = await fetch(`/api/get-models?provider=${selectedProvider}`)
-
-        // Parse the JSON response first to get any error message
         const data = await response.json()
 
         if (!response.ok) {
-          // If the response contains an error message, use it
           if (data && data.error) {
             throw new Error(data.error)
           } else {
@@ -84,22 +78,16 @@ export function WelcomeView({
         }
 
         setModels(data)
-
-        // Automatically select the first model if available
         if (data.length > 0) {
           setSelectedModel(data[0].id)
         }
       } catch (error) {
         console.error('Error fetching models:', error)
-
-        // Ensure models are cleared when there's an error
         setModels([])
         setSelectedModel("")
 
-        // Display specific error messages based on the provider and error message
         if (error instanceof Error) {
           const errorMessage = error.message
-
           if (errorMessage.includes('Ollama')) {
             toast.error('Cannot connect to Ollama. Is the server running?')
           } else if (errorMessage.includes('LM Studio')) {
@@ -120,185 +108,310 @@ export function WelcomeView({
     fetchModels()
   }, [selectedProvider, setSelectedModel])
 
+  // Create floating particles
+  useEffect(() => {
+    const createParticle = () => {
+      const particle = document.createElement('div')
+      particle.className = 'particle'
+      particle.style.left = Math.random() * 100 + '%'
+      particle.style.animationDelay = Math.random() * 20 + 's'
+      particle.style.animationDuration = (Math.random() * 10 + 15) + 's'
+      document.querySelector('.particles')?.appendChild(particle)
+
+      setTimeout(() => {
+        particle.remove()
+      }, 25000)
+    }
+
+    const interval = setInterval(createParticle, 2000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-black">
-      {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black z-0 animate-pulse-slow"></div>
-
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center">
-        <h1
-          className={`text-4xl md:text-6xl font-bold tracking-wider text-white mb-12 ${titleClass}`}
-          style={{ fontFamily: "'Space Mono', monospace" }}
-        >
-          WHAT ARE WE BUILDING?
-        </h1>
-
-        <div className="relative w-full mb-6">
-          <Textarea
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Describe the website you want to create..."
-            className="min-h-[150px] w-full bg-gray-900/80 border-gray-800 focus:border-white focus:ring-white text-white placeholder:text-gray-500 pr-[120px] transition-all duration-300"
-          />
-          <Button
-            onClick={onGenerate}
-            disabled={!prompt.trim() || !selectedModel}
-            className="absolute bottom-4 right-4 bg-gray-900/90 hover:bg-gray-800 text-white font-medium tracking-wider py-3 px-12 text-base rounded-md transition-all duration-300 border border-gray-800 hover:border-gray-700 focus:border-white focus:ring-white"
-          >
-            GENERATE
-          </Button>
-        </div>
-
-        <ProviderSelector
-          selectedProvider={selectedProvider}
-          setSelectedProvider={setSelectedProvider}
-          onProviderChange={() => {}}
-        />
-
-        <div className="w-full mb-4">
-          <label className="block text-sm font-medium text-gray-300 mb-2">SELECT MODEL</label>
-          <Select value={selectedModel} onValueChange={setSelectedModel} disabled={!selectedProvider || isLoadingModels}>
-            <SelectTrigger className="w-full bg-gray-900/80 border-gray-800 focus:border-white focus:ring-white text-white">
-              <SelectValue placeholder={selectedProvider ? "Choose a model..." : "Select a provider first"} />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-900 border-gray-800 text-white">
-              {isLoadingModels ? (
-                <div className="flex items-center justify-center py-2">
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  <span>Loading models...</span>
-                </div>
-              ) : models.length > 0 ? (
-                // Use index + ID as key to avoid duplicates
-                models.map((model, index) => (
-                  <SelectItem key={`${index}-${model.id}`} value={model.id}>
-                    {model.name}
-                  </SelectItem>
-                ))
-              ) : (
-                <div className="p-2 text-sm text-gray-400">
-                  {selectedProvider ? "No models available" : "Select a provider first"}
-                </div>
-              )}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="w-full mb-4">
-          <label className="block text-sm font-medium text-gray-300 mb-2">SYSTEM PROMPTS</label>
-          <Select value={selectedSystemPrompt} onValueChange={setSelectedSystemPrompt}>
-            <SelectTrigger className="w-full bg-gray-900/80 border-gray-800 focus:border-white focus:ring-white text-white">
-              <SelectValue placeholder="Choose a system prompt..." />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-900 border-gray-800 text-white">
-              <SelectItem value="default">
-                <div className="flex flex-col">
-                  <span>Default</span>
-                  <span className="text-xs text-gray-400">Standard code generation</span>
-                </div>
-              </SelectItem>
-              <SelectItem value="thinking">
-                <div className="flex flex-col">
-                  <span>Thinking</span>
-                  <span className="text-xs text-gray-400">Makes non thinking models think</span>
-                </div>
-              </SelectItem>
-              <SelectItem value="custom">
-                <div className="flex flex-col">
-                  <span>Custom System Prompt</span>
-                  <span className="text-xs text-gray-400">Specify a custom System Prompt</span>
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {selectedSystemPrompt === 'custom' && (
-          <div className="w-full mb-4">
-            <label className="block text-sm font-medium text-gray-300 mb-2">CUSTOM SYSTEM PROMPT</label>
-            <Textarea
-              value={customSystemPrompt}
-              onChange={(e) => setCustomSystemPrompt(e.target.value)}
-              placeholder="Enter a custom system prompt to override the default..."
-              className="min-h-[100px] w-full bg-gray-900/80 border-gray-800 focus:border-white focus:ring-white text-white placeholder:text-gray-500 transition-all duration-300"
-            />
-            <p className="mt-1 text-xs text-gray-400">
-              Your custom prompt will be used for this generation and subsequent regenerations.
-            </p>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="particles"></div>
+      
+      {/* Main Content */}
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Header */}
+        <header className="p-6 md:p-8">
+          <div className="flex items-center justify-between max-w-7xl mx-auto">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <Code2 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold gradient-text">LocalSite AI</h1>
+                <p className="text-xs text-muted-foreground">Premium Code Generator</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="status-online w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-sm text-muted-foreground">Online</span>
+            </div>
           </div>
-        )}
+        </header>
 
-        <div className="w-full mb-8">
-          <label className="block text-sm font-medium text-gray-300 mb-2">MAX OUTPUT TOKENS</label>
-          <div className="flex items-center gap-4">
-            <Input
-              type="number"
-              value={maxTokens || ''}
-              onChange={(e) => {
-                const value = e.target.value ? parseInt(e.target.value, 10) : undefined;
-                setMaxTokens(value && !isNaN(value) && value > 0 ? value : undefined);
-              }}
-              placeholder="Default (model dependent)"
-              className="w-full bg-gray-900/80 border-gray-800 focus:border-white focus:ring-white text-white placeholder:text-gray-500 transition-all duration-300"
-              min="100"
-              step="100"
-            />
-            <Button
-              variant="outline"
-              onClick={() => setMaxTokens(undefined)}
-              className="border-gray-800 hover:bg-gray-800 text-gray-300"
-            >
-              Reset
-            </Button>
+        {/* Hero Section */}
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-4xl mx-auto">
+            {/* Main Title */}
+            <div className={`text-center mb-12 transition-all duration-1000 ease-out ${titleClass}`}>
+              <div className="inline-flex items-center space-x-2 mb-4 px-4 py-2 rounded-full glass border border-purple-500/20">
+                <Sparkles className="w-4 h-4 text-purple-400" />
+                <span className="text-sm text-purple-300">AI-Powered Development</span>
+              </div>
+              
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+                <span className="gradient-text">Build Anything</span>
+                <br />
+                <span className="text-white">With AI Magic</span>
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                Transform your ideas into beautiful, functional websites using the power of artificial intelligence
+              </p>
+            </div>
+
+            {/* Main Input Card */}
+            <div className="premium-card p-8 mb-8">
+              <div className="relative">
+                <div className="flex items-center space-x-2 mb-4">
+                  <Wand2 className="w-5 h-5 text-purple-400" />
+                  <span className="text-sm font-medium text-purple-300">Describe Your Vision</span>
+                </div>
+                
+                <Textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="Create a modern landing page for a tech startup with a hero section, features grid, and contact form..."
+                  className="input-premium min-h-[120px] text-lg resize-none border-0 bg-transparent focus:ring-0 focus:outline-none"
+                />
+                
+                <div className="absolute bottom-4 right-4 flex items-center space-x-2">
+                  <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+                    <Brain className="w-3 h-3" />
+                    <span>AI Ready</span>
+                  </div>
+                  <Button
+                    onClick={onGenerate}
+                    disabled={!prompt.trim() || !selectedModel}
+                    className="btn-premium h-12 px-8 text-base font-semibold"
+                  >
+                    <Zap className="w-5 h-5 mr-2" />
+                    Generate
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Configuration Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              {/* Provider Selection */}
+              <div className="premium-card p-6">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="font-semibold">AI Provider</span>
+                </div>
+                <ProviderSelector
+                  selectedProvider={selectedProvider}
+                  setSelectedProvider={setSelectedProvider}
+                  onProviderChange={() => {}}
+                />
+              </div>
+
+              {/* Model Selection */}
+              <div className="premium-card p-6">
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                    <Code2 className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="font-semibold">Model</span>
+                </div>
+                <Select value={selectedModel} onValueChange={setSelectedModel} disabled={!selectedProvider || isLoadingModels}>
+                  <SelectTrigger className="input-premium h-12">
+                    <SelectValue placeholder={selectedProvider ? "Choose a model..." : "Select a provider first"} />
+                  </SelectTrigger>
+                  <SelectContent className="glass-strong border-purple-500/20">
+                    {isLoadingModels ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin text-purple-400" />
+                        <span>Loading models...</span>
+                      </div>
+                    ) : models.length > 0 ? (
+                      models.map((model, index) => (
+                        <SelectItem key={`${index}-${model.id}`} value={model.id} className="focus:bg-purple-500/10">
+                          {model.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-4 text-sm text-muted-foreground text-center">
+                        {selectedProvider ? "No models available" : "Select a provider first"}
+                      </div>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Advanced Settings Toggle */}
+            <div className="text-center mb-8">
+              <Button
+                variant="ghost"
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                className="text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Advanced Settings
+                <ArrowRight className={`w-4 h-4 ml-2 transition-transform ${showAdvanced ? 'rotate-90' : ''}`} />
+              </Button>
+            </div>
+
+            {/* Advanced Settings */}
+            {showAdvanced && (
+              <div className="space-y-6 animate-in slide-in-from-top-4 duration-300">
+                {/* System Prompt */}
+                <div className="premium-card p-6">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                      <Brain className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="font-semibold">System Prompt</span>
+                  </div>
+                  <Select value={selectedSystemPrompt} onValueChange={setSelectedSystemPrompt}>
+                    <SelectTrigger className="input-premium h-12">
+                      <SelectValue placeholder="Choose a system prompt..." />
+                    </SelectTrigger>
+                    <SelectContent className="glass-strong border-purple-500/20">
+                      <SelectItem value="default" className="focus:bg-purple-500/10">
+                        <div className="flex flex-col">
+                          <span>Default</span>
+                          <span className="text-xs text-muted-foreground">Standard code generation</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="thinking" className="focus:bg-purple-500/10">
+                        <div className="flex flex-col">
+                          <span>Thinking</span>
+                          <span className="text-xs text-muted-foreground">Enhanced reasoning process</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="custom" className="focus:bg-purple-500/10">
+                        <div className="flex flex-col">
+                          <span>Custom</span>
+                          <span className="text-xs text-muted-foreground">Define your own prompt</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Custom System Prompt */}
+                {selectedSystemPrompt === 'custom' && (
+                  <div className="premium-card p-6">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Palette className="w-5 h-5 text-purple-400" />
+                      <span className="font-semibold">Custom System Prompt</span>
+                    </div>
+                    <Textarea
+                      value={customSystemPrompt}
+                      onChange={(e) => setCustomSystemPrompt(e.target.value)}
+                      placeholder="Enter a custom system prompt to override the default..."
+                      className="input-premium min-h-[100px] resize-none"
+                    />
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Your custom prompt will be used for this generation and subsequent regenerations.
+                    </p>
+                  </div>
+                )}
+
+                {/* Max Tokens */}
+                <div className="premium-card p-6">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                      <Zap className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="font-semibold">Output Tokens</span>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <Input
+                      type="number"
+                      value={maxTokens || ''}
+                      onChange={(e) => {
+                        const value = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                        setMaxTokens(value && !isNaN(value) && value > 0 ? value : undefined);
+                      }}
+                      placeholder="Auto (model default)"
+                      className="input-premium h-12 flex-1"
+                      min="100"
+                      step="100"
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => setMaxTokens(undefined)}
+                      className="h-12 px-6 border-purple-500/20 hover:bg-purple-500/10 hover:border-purple-500/40"
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Control the maximum length of generated code. Higher values allow for more detailed implementations.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Examples */}
+            <div className="mt-12">
+              <h3 className="text-lg font-semibold mb-6 text-center">Quick Start Examples</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  {
+                    title: "Landing Page",
+                    description: "Modern startup landing with hero section",
+                    prompt: "Create a modern landing page for a tech startup with a hero section, features grid, and contact form",
+                    icon: Sparkles,
+                    gradient: "from-blue-500 to-cyan-500"
+                  },
+                  {
+                    title: "Dashboard",
+                    description: "Analytics dashboard with charts",
+                    prompt: "Build a responsive analytics dashboard with charts, metrics cards, and a sidebar navigation",
+                    icon: Code2,
+                    gradient: "from-green-500 to-emerald-500"
+                  },
+                  {
+                    title: "Portfolio",
+                    description: "Creative portfolio showcase",
+                    prompt: "Design a creative portfolio website with project gallery, about section, and contact form",
+                    icon: Palette,
+                    gradient: "from-purple-500 to-pink-500"
+                  }
+                ].map((example, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setPrompt(example.prompt)}
+                    className="premium-card p-4 text-left hover:scale-105 transition-all duration-300 group"
+                  >
+                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${example.gradient} flex items-center justify-center mb-3`}>
+                      <example.icon className="w-5 h-5 text-white" />
+                    </div>
+                    <h4 className="font-semibold mb-1 group-hover:text-purple-300 transition-colors">
+                      {example.title}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      {example.description}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <p className="mt-1 text-xs text-gray-400">
-            Set the maximum number of tokens for the model output. Higher values allow for longer code generation but may take more time. Leave empty to use the model's default.
-          </p>
         </div>
-
-
       </div>
-
-      <style jsx global>{`
-        @keyframes pulse-slow {
-          0%, 100% {
-            opacity: 0.8;
-          }
-          50% {
-            opacity: 0.6;
-          }
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 8s ease-in-out infinite;
-        }
-
-        @keyframes typing {
-          from { width: 0 }
-          to { width: 100% }
-        }
-
-        .pre-animation {
-          overflow: hidden;
-          white-space: nowrap;
-          width: 0;
-          border-right: 4px solid transparent;
-        }
-
-        .typing-animation {
-          overflow: hidden;
-          white-space: nowrap;
-          border-right: 4px solid #fff;
-          animation:
-            typing 1.75s steps(40, end),
-            blink-caret 0.75s step-end infinite;
-        }
-
-        @keyframes blink-caret {
-          from, to { border-color: transparent }
-          50% { border-color: #fff }
-        }
-      `}</style>
     </div>
   )
 }
