@@ -6,9 +6,9 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "LocalSite AI - Premium Code Generator",
+  title: "PythaGO AI - Premium Code Generator",
   description: "Transform your ideas into beautiful, functional websites using the power of artificial intelligence. Ultra-modern AI-powered development platform.",
-  generator: 'LocalSite AI v2.0'
+  generator: 'PythaGO AI v2.0'
 }
 
 export default function RootLayout({

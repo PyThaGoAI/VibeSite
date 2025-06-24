@@ -210,18 +210,18 @@ export function GenerationView({
   const providerInfo = getProviderInfo()
 
   return (
-    <div className={`h-screen flex flex-col overflow-hidden transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
+    <div className={`h-screen w-full flex flex-col overflow-hidden transition-all duration-300 ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
       {/* Premium Header */}
-      <header className="glass-strong border-b border-purple-500/20 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${providerInfo.color} flex items-center justify-center`}>
-              <Sparkles className="w-5 h-5 text-white" />
+      <header className="w-full glass-strong border-b border-purple-500/20 p-4">
+        <div className="w-full flex items-center justify-between">
+          <div className="flex items-center space-x-4 min-w-0 flex-1">
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${providerInfo.color} flex items-center justify-center flex-shrink-0`}>
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="flex items-center space-x-3">
-                <h1 className="text-lg font-bold text-white">{providerInfo.name}</h1>
-                <Badge variant="outline" className="bg-purple-500/10 text-purple-300 border-purple-500/30">
+                <h1 className="text-base sm:text-lg font-bold text-white truncate">PythaGO AI</h1>
+                <Badge variant="outline" className="bg-purple-500/10 text-purple-300 border-purple-500/30 text-xs">
                   {model}
                 </Badge>
                 {thinkingOutput && (
@@ -232,16 +232,16 @@ export function GenerationView({
                   />
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">AI Code Generation in Progress</p>
+              <p className="text-xs text-muted-foreground hidden sm:block">AI Code Generation in Progress</p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsFullscreen(!isFullscreen)}
-              className="h-9 px-3 hover:bg-purple-500/10 text-purple-300"
+              className="h-8 w-8 sm:h-9 sm:w-9 p-0 hover:bg-purple-500/10 text-purple-300"
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </Button>
@@ -250,27 +250,27 @@ export function GenerationView({
               size="sm"
               onClick={() => window.location.reload()}
               disabled={isGenerating}
-              className="h-9 px-3 hover:bg-purple-500/10 text-purple-300"
+              className="h-8 sm:h-9 px-2 sm:px-3 hover:bg-purple-500/10 text-purple-300"
             >
-              <Home className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Home</span>
+              <Home className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline text-xs sm:text-sm">Home</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={downloadCode}
               disabled={!generatedCode || isGenerating}
-              className="h-9 px-3 hover:bg-purple-500/10 text-purple-300"
+              className="h-8 sm:h-9 px-2 sm:px-3 hover:bg-purple-500/10 text-purple-300"
             >
-              <Download className="w-4 h-4 mr-2" />
-              <span className="hidden sm:inline">Export</span>
+              <Download className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline text-xs sm:text-sm">Export</span>
             </Button>
           </div>
         </div>
       </header>
 
       {/* Mobile Tab Navigation */}
-      <div className="md:hidden flex glass border-b border-purple-500/20">
+      <div className="md:hidden w-full flex glass border-b border-purple-500/20">
         <button
           className={`flex-1 py-3 text-sm font-medium transition-all ${
             activeTab === "code" 
@@ -296,13 +296,13 @@ export function GenerationView({
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 w-full overflow-hidden">
         {/* Mobile View */}
         <div className="md:hidden w-full flex flex-col">
           {activeTab === "code" ? (
             <>
               {/* Code Editor */}
-              <div className="h-[60%] border-b border-purple-500/20 flex flex-col">
+              <div className="h-[60%] w-full border-b border-purple-500/20 flex flex-col">
                 <div className="flex items-center justify-between p-3 glass border-b border-purple-500/20">
                   <div className="flex items-center space-x-3">
                     <Code2 className="w-4 h-4 text-purple-400" />
@@ -351,7 +351,7 @@ export function GenerationView({
                     </Button>
                   </div>
                 </div>
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 w-full overflow-hidden">
                   {isGenerating && !generatedCode ? (
                     <div className="h-full w-full flex items-center justify-center">
                       <div className="text-center">
@@ -373,7 +373,7 @@ export function GenerationView({
               </div>
 
               {/* Controls */}
-              <div className="h-[40%] p-4 flex flex-col overflow-hidden">
+              <div className="h-[40%] w-full p-4 flex flex-col overflow-hidden">
                 <div className="mb-4 flex-shrink-0">
                   <div className="flex items-center space-x-2 mb-2">
                     <Zap className="w-4 h-4 text-purple-400" />
@@ -384,7 +384,7 @@ export function GenerationView({
                       value={newPrompt}
                       onChange={(e) => setNewPrompt(e.target.value)}
                       placeholder="Describe changes or new features..."
-                      className="input-premium min-h-[60px] pr-12 resize-none"
+                      className="input-premium min-h-[60px] pr-12 resize-none w-full"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault()
@@ -478,7 +478,7 @@ export function GenerationView({
                 </div>
               </div>
 
-              <div className="flex-1 p-4 flex items-center justify-center overflow-hidden">
+              <div className="flex-1 w-full p-4 flex items-center justify-center overflow-hidden">
                 <div
                   className={`premium-card overflow-hidden transition-all duration-300 ${
                     viewportSize === "desktop"
@@ -534,9 +534,9 @@ export function GenerationView({
           <ResizablePanelGroup direction="horizontal" className="w-full h-full">
             {/* Left Panel - Code & Controls */}
             <ResizablePanel defaultSize={65} minSize={30}>
-              <div className="h-full flex flex-col border-r border-purple-500/20">
+              <div className="h-full w-full flex flex-col border-r border-purple-500/20">
                 {/* Code Editor */}
-                <div className="h-[65%] border-b border-purple-500/20 flex flex-col">
+                <div className="h-[65%] w-full border-b border-purple-500/20 flex flex-col">
                   <div className="flex items-center justify-between p-4 glass border-b border-purple-500/20">
                     <div className="flex items-center space-x-3">
                       <Code2 className="w-5 h-5 text-purple-400" />
@@ -585,7 +585,7 @@ export function GenerationView({
                       </Button>
                     </div>
                   </div>
-                  <div className="flex-1 overflow-hidden">
+                  <div className="flex-1 w-full overflow-hidden">
                     {isGenerating && !generatedCode ? (
                       <div className="h-full w-full flex items-center justify-center">
                         <div className="text-center">
@@ -607,7 +607,7 @@ export function GenerationView({
                 </div>
 
                 {/* Controls Panel */}
-                <div className="h-[35%] p-4 flex flex-col overflow-hidden">
+                <div className="h-[35%] w-full p-4 flex flex-col overflow-hidden">
                   <div className="mb-4 flex-shrink-0">
                     <div className="flex items-center space-x-2 mb-3">
                       <Zap className="w-5 h-5 text-purple-400" />
@@ -618,7 +618,7 @@ export function GenerationView({
                         value={newPrompt}
                         onChange={(e) => setNewPrompt(e.target.value)}
                         placeholder="Describe changes, add features, or request modifications..."
-                        className="input-premium min-h-[80px] pr-16 resize-none"
+                        className="input-premium min-h-[80px] pr-16 resize-none w-full"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault()
@@ -670,7 +670,7 @@ export function GenerationView({
 
             {/* Right Panel - Preview */}
             <ResizablePanel defaultSize={35} minSize={25}>
-              <div className="h-full flex flex-col">
+              <div className="h-full w-full flex flex-col">
                 <div className="p-4 glass border-b border-purple-500/20 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Eye className="w-5 h-5 text-purple-400" />
@@ -715,7 +715,7 @@ export function GenerationView({
                   </div>
                 </div>
 
-                <div className="flex-1 p-4 flex items-center justify-center overflow-hidden">
+                <div className="flex-1 w-full p-4 flex items-center justify-center overflow-hidden">
                   <div
                     className={`premium-card overflow-hidden transition-all duration-300 ${
                       viewportSize === "desktop"

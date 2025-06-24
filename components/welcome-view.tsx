@@ -128,115 +128,120 @@ export function WelcomeView({
   }, [])
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen w-full relative overflow-hidden">
       {/* Animated Background */}
       <div className="particles"></div>
       
       {/* Main Content */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        {/* Header */}
-        <header className="p-6 md:p-8">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Code2 className="w-6 h-6 text-white" />
+      <div className="relative z-10 min-h-screen w-full flex flex-col">
+        {/* Header - 100% width */}
+        <header className="w-full p-4 sm:p-6 lg:p-8">
+          <div className="w-full flex items-center justify-between">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                <Code2 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold gradient-text">LocalSite AI</h1>
-                <p className="text-xs text-muted-foreground">Premium Code Generator</p>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold gradient-text truncate">PythaGO AI</h1>
+                <p className="text-xs text-muted-foreground hidden sm:block">Premium Code Generator</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-shrink-0">
               <div className="status-online w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-muted-foreground">Online</span>
+              <span className="text-sm text-muted-foreground hidden sm:inline">Online</span>
             </div>
           </div>
         </header>
 
-        {/* Hero Section */}
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-4xl mx-auto">
+        {/* Hero Section - 100% width */}
+        <div className="flex-1 w-full flex items-center justify-center p-4 sm:p-6">
+          <div className="w-full max-w-6xl mx-auto">
             {/* Main Title */}
-            <div className={`text-center mb-12 transition-all duration-1000 ease-out ${titleClass}`}>
-              <div className="inline-flex items-center space-x-2 mb-4 px-4 py-2 rounded-full glass border border-purple-500/20">
-                <Sparkles className="w-4 h-4 text-purple-400" />
-                <span className="text-sm text-purple-300">AI-Powered Development</span>
+            <div className={`text-center mb-8 sm:mb-12 transition-all duration-1000 ease-out ${titleClass}`}>
+              <div className="inline-flex items-center space-x-2 mb-4 px-3 sm:px-4 py-2 rounded-full glass border border-purple-500/20">
+                <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                <span className="text-xs sm:text-sm text-purple-300">AI-Powered Development</span>
               </div>
               
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 leading-tight px-2">
                 <span className="gradient-text">Build Anything</span>
                 <br />
                 <span className="text-white">With AI Magic</span>
               </h1>
               
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-4">
                 Transform your ideas into beautiful, functional websites using the power of artificial intelligence
               </p>
             </div>
 
-            {/* Main Input Card */}
-            <div className="premium-card p-8 mb-8">
-              <div className="relative">
+            {/* Main Input Card - 100% width */}
+            <div className="w-full premium-card p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+              <div className="relative w-full">
                 <div className="flex items-center space-x-2 mb-4">
-                  <Wand2 className="w-5 h-5 text-purple-400" />
+                  <Wand2 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" />
                   <span className="text-sm font-medium text-purple-300">Describe Your Vision</span>
                 </div>
                 
-                <Textarea
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Create a modern landing page for a tech startup with a hero section, features grid, and contact form..."
-                  className="input-premium min-h-[120px] text-lg resize-none border-0 bg-transparent focus:ring-0 focus:outline-none"
-                />
-                
-                <div className="absolute bottom-4 right-4 flex items-center space-x-2">
-                  <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                    <Brain className="w-3 h-3" />
-                    <span>AI Ready</span>
+                <div className="relative w-full">
+                  <Textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="Create a modern landing page for a tech startup with a hero section, features grid, and contact form..."
+                    className="input-premium min-h-[100px] sm:min-h-[120px] text-base sm:text-lg resize-none border-0 bg-transparent focus:ring-0 focus:outline-none w-full pr-16 sm:pr-20"
+                  />
+                  
+                  <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                    <div className="flex items-center space-x-1 text-xs text-muted-foreground order-2 sm:order-1">
+                      <Brain className="w-3 h-3 flex-shrink-0" />
+                      <span className="hidden sm:inline">AI Ready</span>
+                    </div>
+                    <Button
+                      onClick={onGenerate}
+                      disabled={!prompt.trim() || !selectedModel}
+                      className="btn-premium h-10 sm:h-12 px-4 sm:px-8 text-sm sm:text-base font-semibold order-1 sm:order-2 flex-shrink-0"
+                    >
+                      <Zap className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                      <span className="hidden sm:inline">Generate</span>
+                      <span className="sm:hidden">Go</span>
+                      <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 flex-shrink-0" />
+                    </Button>
                   </div>
-                  <Button
-                    onClick={onGenerate}
-                    disabled={!prompt.trim() || !selectedModel}
-                    className="btn-premium h-12 px-8 text-base font-semibold"
-                  >
-                    <Zap className="w-5 h-5 mr-2" />
-                    Generate
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
                 </div>
               </div>
             </div>
 
-            {/* Configuration Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* Configuration Grid - 100% width */}
+            <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
               {/* Provider Selection */}
-              <div className="premium-card p-6">
+              <div className="w-full premium-card p-4 sm:p-6">
                 <div className="flex items-center space-x-2 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-white" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                   </div>
-                  <span className="font-semibold">AI Provider</span>
+                  <span className="font-semibold text-sm sm:text-base">AI Provider</span>
                 </div>
-                <ProviderSelector
-                  selectedProvider={selectedProvider}
-                  setSelectedProvider={setSelectedProvider}
-                  onProviderChange={() => {}}
-                />
+                <div className="w-full">
+                  <ProviderSelector
+                    selectedProvider={selectedProvider}
+                    setSelectedProvider={setSelectedProvider}
+                    onProviderChange={() => {}}
+                  />
+                </div>
               </div>
 
               {/* Model Selection */}
-              <div className="premium-card p-6">
+              <div className="w-full premium-card p-4 sm:p-6">
                 <div className="flex items-center space-x-2 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                    <Code2 className="w-4 h-4 text-white" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                    <Code2 className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                   </div>
-                  <span className="font-semibold">Model</span>
+                  <span className="font-semibold text-sm sm:text-base">Model</span>
                 </div>
                 <Select value={selectedModel} onValueChange={setSelectedModel} disabled={!selectedProvider || isLoadingModels}>
-                  <SelectTrigger className="input-premium h-12">
+                  <SelectTrigger className="input-premium h-10 sm:h-12 w-full">
                     <SelectValue placeholder={selectedProvider ? "Choose a model..." : "Select a provider first"} />
                   </SelectTrigger>
-                  <SelectContent className="glass-strong border-purple-500/20">
+                  <SelectContent className="glass-strong border-purple-500/20 w-full">
                     {isLoadingModels ? (
                       <div className="flex items-center justify-center py-4">
                         <Loader2 className="w-4 h-4 mr-2 animate-spin text-purple-400" />
@@ -259,7 +264,7 @@ export function WelcomeView({
             </div>
 
             {/* Advanced Settings Toggle */}
-            <div className="text-center mb-8">
+            <div className="w-full text-center mb-6 sm:mb-8">
               <Button
                 variant="ghost"
                 onClick={() => setShowAdvanced(!showAdvanced)}
@@ -273,20 +278,20 @@ export function WelcomeView({
 
             {/* Advanced Settings */}
             {showAdvanced && (
-              <div className="space-y-6 animate-in slide-in-from-top-4 duration-300">
+              <div className="w-full space-y-4 sm:space-y-6 animate-in slide-in-from-top-4 duration-300">
                 {/* System Prompt */}
-                <div className="premium-card p-6">
+                <div className="w-full premium-card p-4 sm:p-6">
                   <div className="flex items-center space-x-2 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
-                      <Brain className="w-4 h-4 text-white" />
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center flex-shrink-0">
+                      <Brain className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                     </div>
-                    <span className="font-semibold">System Prompt</span>
+                    <span className="font-semibold text-sm sm:text-base">System Prompt</span>
                   </div>
                   <Select value={selectedSystemPrompt} onValueChange={setSelectedSystemPrompt}>
-                    <SelectTrigger className="input-premium h-12">
+                    <SelectTrigger className="input-premium h-10 sm:h-12 w-full">
                       <SelectValue placeholder="Choose a system prompt..." />
                     </SelectTrigger>
-                    <SelectContent className="glass-strong border-purple-500/20">
+                    <SelectContent className="glass-strong border-purple-500/20 w-full">
                       <SelectItem value="default" className="focus:bg-purple-500/10">
                         <div className="flex flex-col">
                           <span>Default</span>
@@ -311,16 +316,16 @@ export function WelcomeView({
 
                 {/* Custom System Prompt */}
                 {selectedSystemPrompt === 'custom' && (
-                  <div className="premium-card p-6">
+                  <div className="w-full premium-card p-4 sm:p-6">
                     <div className="flex items-center space-x-2 mb-4">
-                      <Palette className="w-5 h-5 text-purple-400" />
-                      <span className="font-semibold">Custom System Prompt</span>
+                      <Palette className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" />
+                      <span className="font-semibold text-sm sm:text-base">Custom System Prompt</span>
                     </div>
                     <Textarea
                       value={customSystemPrompt}
                       onChange={(e) => setCustomSystemPrompt(e.target.value)}
                       placeholder="Enter a custom system prompt to override the default..."
-                      className="input-premium min-h-[100px] resize-none"
+                      className="input-premium min-h-[80px] sm:min-h-[100px] resize-none w-full"
                     />
                     <p className="mt-3 text-xs text-muted-foreground">
                       Your custom prompt will be used for this generation and subsequent regenerations.
@@ -329,14 +334,14 @@ export function WelcomeView({
                 )}
 
                 {/* Max Tokens */}
-                <div className="premium-card p-6">
+                <div className="w-full premium-card p-4 sm:p-6">
                   <div className="flex items-center space-x-2 mb-4">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                      <Zap className="w-4 h-4 text-white" />
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                      <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                     </div>
-                    <span className="font-semibold">Output Tokens</span>
+                    <span className="font-semibold text-sm sm:text-base">Output Tokens</span>
                   </div>
-                  <div className="flex items-center space-x-4">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                     <Input
                       type="number"
                       value={maxTokens || ''}
@@ -345,14 +350,14 @@ export function WelcomeView({
                         setMaxTokens(value && !isNaN(value) && value > 0 ? value : undefined);
                       }}
                       placeholder="Auto (model default)"
-                      className="input-premium h-12 flex-1"
+                      className="input-premium h-10 sm:h-12 flex-1"
                       min="100"
                       step="100"
                     />
                     <Button
                       variant="outline"
                       onClick={() => setMaxTokens(undefined)}
-                      className="h-12 px-6 border-purple-500/20 hover:bg-purple-500/10 hover:border-purple-500/40"
+                      className="h-10 sm:h-12 px-4 sm:px-6 border-purple-500/20 hover:bg-purple-500/10 hover:border-purple-500/40 flex-shrink-0"
                     >
                       Reset
                     </Button>
@@ -364,10 +369,10 @@ export function WelcomeView({
               </div>
             )}
 
-            {/* Quick Examples */}
-            <div className="mt-12">
-              <h3 className="text-lg font-semibold mb-6 text-center">Quick Start Examples</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Quick Examples - 100% width */}
+            <div className="w-full mt-8 sm:mt-12">
+              <h3 className="text-lg font-semibold mb-4 sm:mb-6 text-center">Quick Start Examples</h3>
+              <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
                   {
                     title: "Landing Page",
@@ -394,15 +399,15 @@ export function WelcomeView({
                   <button
                     key={index}
                     onClick={() => setPrompt(example.prompt)}
-                    className="premium-card p-4 text-left hover:scale-105 transition-all duration-300 group"
+                    className="w-full premium-card p-4 text-left hover:scale-105 transition-all duration-300 group"
                   >
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${example.gradient} flex items-center justify-center mb-3`}>
-                      <example.icon className="w-5 h-5 text-white" />
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br ${example.gradient} flex items-center justify-center mb-3 flex-shrink-0`}>
+                      <example.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
-                    <h4 className="font-semibold mb-1 group-hover:text-purple-300 transition-colors">
+                    <h4 className="font-semibold mb-1 group-hover:text-purple-300 transition-colors text-sm sm:text-base">
                       {example.title}
                     </h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {example.description}
                     </p>
                   </button>

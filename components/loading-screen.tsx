@@ -49,7 +49,7 @@ export function LoadingScreen() {
             <CurrentIcon className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2">
-            LocalSite AI
+            PythaGO AI
           </h1>
           <p className="text-muted-foreground">Premium Code Generator</p>
         </div>
