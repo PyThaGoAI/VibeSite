@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Loader2, Sparkles, Zap, Code2, Palette, Wand2, ArrowRight, Settings, Brain } from "lucide-react"
 import { toast } from "sonner"
 import { ProviderSelector } from "@/components/provider-selector"
+import { PremiumFooter } from "@/components/premium-footer"
 
 interface Model {
   id: string
@@ -128,12 +129,12 @@ export function WelcomeView({
   }, [])
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden">
+    <div className="min-h-screen w-full relative overflow-hidden flex flex-col">
       {/* Animated Background */}
       <div className="particles"></div>
       
       {/* Main Content */}
-      <div className="relative z-10 min-h-screen w-full flex flex-col">
+      <div className="relative z-10 flex-1 w-full flex flex-col">
         {/* Header - 100% width */}
         <header className="w-full p-4 sm:p-6 lg:p-8">
           <div className="w-full flex items-center justify-between">
@@ -417,6 +418,9 @@ export function WelcomeView({
           </div>
         </div>
       </div>
+
+      {/* Premium Footer */}
+      <PremiumFooter />
     </div>
   )
 }
