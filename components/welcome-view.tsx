@@ -67,7 +67,7 @@ export function WelcomeView({
       setModels([])
 
       try {
-        const response = await fetch(`/api/get-models?provider=${selectedProvider}`)
+        const response = await fetch(`/api/get-models?provider=openrouter`)
         const data = await response.json()
 
         if (!response.ok) {
@@ -88,18 +88,9 @@ export function WelcomeView({
         setSelectedModel("")
 
         if (error instanceof Error) {
-          const errorMessage = error.message
-          if (errorMessage.includes('Ollama')) {
-            toast.error('Cannot connect to Ollama. Is the server running?')
-          } else if (errorMessage.includes('LM Studio')) {
-            toast.error('Cannot connect to LM Studio. Is the server running?')
-          } else if (selectedProvider === 'deepseek' || selectedProvider === 'openai_compatible') {
-            toast.error('Make sure the Base URL and API Keys are correct in your .env.local file.')
-          } else {
-            toast.error('Models could not be loaded. Please try again later.')
-          }
+          toast.error(error.message || 'Models could not be loaded. Please try again later.');
         } else {
-          toast.error('Models could not be loaded. Please try again later.')
+          toast.error('Models could not be loaded. Please try again later.');
         }
       } finally {
         setIsLoadingModels(false)
@@ -127,6 +118,10 @@ export function WelcomeView({
     const interval = setInterval(createParticle, 2000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    setSelectedProvider("openrouter");
+  }, [setSelectedProvider]);
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden flex flex-col">
@@ -222,11 +217,12 @@ export function WelcomeView({
                   <span className="font-semibold text-sm sm:text-base">AI Provider</span>
                 </div>
                 <div className="w-full">
-                  <ProviderSelector
+                  {/* Șterge sau comentează acest bloc din grid */}
+                  {/* <ProviderSelector
                     selectedProvider={selectedProvider}
                     setSelectedProvider={setSelectedProvider}
                     onProviderChange={() => {}}
-                  />
+                  /> */}
                 </div>
               </div>
 
