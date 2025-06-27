@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { LLMProvider, getProviderApiKey, getProviderBaseUrl } from './config';
+import { DemoProvider } from './demo';
 
 // Shared system prompt for all providers
 export const SYSTEM_PROMPT = "You are an expert web developer AI. Your task is to generate a single, self-contained HTML file based on the user's prompt. This HTML file must include all necessary HTML structure, CSS styles within <style> tags in the <head>, and JavaScript code within <script> tags, preferably at the end of the <body>. IMPORTANT: Do NOT use markdown formatting. Do NOT wrap the code in ```html and ``` tags. Do NOT output any text or explanation before or after the HTML code. Only output the raw HTML code itself, starting with <!DOCTYPE html> and ending with </html>. Ensure the generated CSS and JavaScript are directly embedded in the HTML file.";
@@ -10,8 +11,23 @@ export interface LLMProviderClient {
   generateCode: (prompt: string, model: string, customSystemPrompt?: string | null, maxTokens?: number) => Promise<ReadableStream<Uint8Array>>;
 }
 
+// Check if we're in demo mode
+function isDemoMode(): boolean {
+  return process.env.DEMO_MODE === 'true' || 
+         process.env.NODE_ENV === 'development' && (
+           !process.env.DEEPSEEK_API_KEY?.startsWith('sk-') ||
+           process.env.DEEPSEEK_API_KEY?.includes('demo') ||
+           process.env.OPENAI_COMPATIBLE_API_KEY?.includes('demo')
+         );
+}
+
 // Factory function to create a provider client
 export function createProviderClient(provider: LLMProvider): LLMProviderClient {
+  // Use demo provider if in demo mode
+  if (isDemoMode()) {
+    return new DemoProviderClient();
+  }
+
   switch (provider) {
     case LLMProvider.DEEPSEEK:
       return new OpenAICompatibleProvider(LLMProvider.DEEPSEEK);
@@ -23,6 +39,17 @@ export function createProviderClient(provider: LLMProvider): LLMProviderClient {
       return new LMStudioProvider();
     default:
       throw new Error(`Unsupported provider: ${provider}`);
+  }
+}
+
+// Demo Provider Client
+class DemoProviderClient implements LLMProviderClient {
+  async getModels() {
+    return DemoProvider.getModels();
+  }
+
+  async generateCode(prompt: string, model: string, customSystemPrompt?: string | null, maxTokens?: number) {
+    return DemoProvider.generateCode(prompt, model, customSystemPrompt, maxTokens);
   }
 }
 
