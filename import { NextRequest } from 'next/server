@@ -1,0 +1,51 @@
+import { NextRequest } from 'next/server';
+import { createProviderClient } from '@/lib/providers/provider';
+
+const OPENROUTER_PROVIDER = 'openrouter';
+
+export async function POST(request: NextRequest) {
+  try {
+    const { prompt, model, customSystemPrompt, maxTokens } = await request.json();
+
+    if (!prompt || !model) {
+      return new Response(
+        JSON.stringify({ error: 'Prompt and model are required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!process.env.OPENROUTER_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: "Cheia API pentru OpenRouter nu este configurată. Te rugăm să setezi OPENROUTER_API_KEY în .env.local." }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const parsedMaxTokens = maxTokens ? parseInt(maxTokens.toString(), 10) : undefined;
+    const providerClient = createProviderClient(OPENROUTER_PROVIDER);
+
+    const stream = await providerClient.generateCode(prompt, model, customSystemPrompt || null, parsedMaxTokens);
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+      },
+    });
+  } catch (error) {
+    console.error('Error generating code:', error);
+
+    let errorMessage = 'Error generating code';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      if (error.message.includes('401') || error.message.includes('No auth credentials')) {
+        errorMessage = 'Authentication failed. Please check your OpenRouter API key configuration.';
+      }
+    }
+
+    return new Response(
+      JSON.stringify({ error: errorMessage }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+}
