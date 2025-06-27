@@ -69,12 +69,13 @@ IMPORTANT: Apart from the initial <think>...</think> block, do NOT use markdown 
         try {
           const errorData = await response.json()
           if (errorData && errorData.error) {
+            toast.error(errorData.error)
             throw new Error(errorData.error)
           }
         } catch (jsonError) {
-          // If we can't parse the JSON, just use the status
+          // Dacă nu putem parsa JSON-ul, afișăm statusul
+          toast.error(`HTTP error! status: ${response.status}`)
         }
-
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
@@ -163,21 +164,9 @@ IMPORTANT: Apart from the initial <think>...</think> block, do NOT use markdown 
     } catch (error) {
       console.error('Error generating code:', error)
 
-      // Display specific error messages based on the provider and error message
-      if (error instanceof Error) {
-        const errorMessage = error.message
-
-        if (errorMessage.includes('Ollama')) {
-          toast.error('Cannot connect to Ollama. Is the server running?')
-        } else if (errorMessage.includes('LM Studio')) {
-          toast.error('Cannot connect to LM Studio. Is the server running?')
-        } else if (selectedProvider === 'deepseek' || selectedProvider === 'openai_compatible') {
-          // For cloud providers, show a message about API keys
-          toast.error('Make sure the Base URL and API Keys are correct in your .env.local file.')
-        } else {
-          // Generic fallback message
-          toast.error('Error generating code. Please try again later.')
-        }
+      // Afișează mesajul de eroare dacă există, altfel fallback generic
+      if (error instanceof Error && error.message) {
+        toast.error(error.message)
       } else {
         toast.error('Error generating code. Please try again later.')
       }
@@ -226,12 +215,13 @@ IMPORTANT: Apart from the initial <think>...</think> block, do NOT use markdown 
         try {
           const errorData = await response.json()
           if (errorData && errorData.error) {
+            toast.error(errorData.error)
             throw new Error(errorData.error)
           }
         } catch (jsonError) {
-          // If we can't parse the JSON, just use the status
+          // Dacă nu putem parsa JSON-ul, afișăm statusul
+          toast.error(`HTTP error! status: ${response.status}`)
         }
-
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
@@ -320,21 +310,9 @@ IMPORTANT: Apart from the initial <think>...</think> block, do NOT use markdown 
     } catch (error) {
       console.error('Error generating code:', error)
 
-      // Display specific error messages based on the provider and error message
-      if (error instanceof Error) {
-        const errorMessage = error.message
-
-        if (errorMessage.includes('Ollama')) {
-          toast.error('Cannot connect to Ollama. Is the server running?')
-        } else if (errorMessage.includes('LM Studio')) {
-          toast.error('Cannot connect to LM Studio. Is the server running?')
-        } else if (selectedProvider === 'deepseek' || selectedProvider === 'openai_compatible') {
-          // For cloud providers, show a message about API keys
-          toast.error('Make sure the Base URL and API Keys are correct in your .env.local file.')
-        } else {
-          // Generic fallback message
-          toast.error('Error generating code. Please try again later.')
-        }
+      // Afișează mesajul de eroare dacă există, altfel fallback generic
+      if (error instanceof Error && error.message) {
+        toast.error(error.message)
       } else {
         toast.error('Error generating code. Please try again later.')
       }
