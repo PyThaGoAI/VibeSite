@@ -24,7 +24,7 @@ export function createProviderClient(provider: LLMProvider): LLMProviderClient {
     case LLMProvider.OPENROUTER: {
       // DEBUG: loghează cheia și endpointul folosite pentru OpenRouter
       const apiKey = getProviderApiKey(LLMProvider.OPENROUTER);
-      const baseURL = getProviderBaseUrl(LLMProvider.OPENROUTER);
+const baseURL = getProviderBaseUrl(LLMProvider.OPENROUTER);
       console.log('[DEBUG][OPENROUTER] API KEY:', apiKey);
       console.log('[DEBUG][OPENROUTER] BASE URL:', baseURL);
       return new OpenAICompatibleProvider(LLMProvider.OPENROUTER);
@@ -48,7 +48,7 @@ class OpenAICompatibleProvider implements LLMProviderClient {
     if (!apiKey) {
       throw new Error(`API key not found for provider ${provider}. Please configure the appropriate environment variable.`);
     }
-    
+
     this.client = new OpenAI({
       apiKey: apiKey,
       baseURL: baseURL,
@@ -281,5 +281,20 @@ class LMStudioProvider implements LLMProviderClient {
       console.error('Error generating code with LM Studio:', error);
       throw error;
     }
+  }
+}
+
+export function getProviderApiKey(provider: LLMProvider): string | undefined {
+  switch (provider) {
+    case LLMProvider.OPENROUTER:
+      return process.env.OPENROUTER_API_KEY;
+    // ... restul providerilor
+  }
+}
+export function getProviderBaseUrl(provider: LLMProvider): string | undefined {
+  switch (provider) {
+    case LLMProvider.OPENROUTER:
+      return process.env.OPENROUTER_API_BASE;
+    // ... restul providerilor
   }
 }
