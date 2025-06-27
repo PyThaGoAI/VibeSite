@@ -25,11 +25,12 @@ export async function POST(request: NextRequest) {
       provider = providerParam as LLMProvider;
     } else {
       // Use the default provider from environment variables or DeepSeek as fallback
-      provider = (process.env.DEFAULT_PROVIDER as LLMProvider) || LLMProvider.DEEPSEEK;
+      provider = (process.env.DEFAULT_PROVIDER as LLMProvider) || LLMProvider.OPENROUTER;
     }
 
     // Validare chei și endpointuri pentru fiecare provider popular
     const providerEnvChecks: Record<string, { key?: string; base?: string; }> = {
+      [LLMProvider.OPENROUTER]: { key: process.env.OPENROUTER_API_KEY, base: process.env.OPENROUTER_API_BASE },
       [LLMProvider.DEEPSEEK]: { key: process.env.DEEPSEEK_API_KEY, base: process.env.DEEPSEEK_API_BASE },
       [LLMProvider.OPENAI]: { key: process.env.OPENAI_API_KEY, base: process.env.OPENAI_API_BASE },
       [LLMProvider.OPENAI_COMPATIBLE]: { key: process.env.OPENAI_COMPATIBLE_API_KEY, base: process.env.OPENAI_COMPATIBLE_BASE_URL },

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       provider = providerParam as LLMProvider;
     } else {
       // Use the default provider from environment variables or DeepSeek as fallback
-      provider = (process.env.DEFAULT_PROVIDER as LLMProvider) || LLMProvider.DEEPSEEK;
+      provider = (process.env.DEFAULT_PROVIDER as LLMProvider) || LLMProvider.OPENROUTER;
     }
 
     // Create the provider client
