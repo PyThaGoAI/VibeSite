@@ -94,55 +94,11 @@ export function ProviderSelector({
 
   return (
     <div className="w-full">
-      <Select value={selectedProvider} onValueChange={handleProviderChange}>
-        <SelectTrigger className="input-premium h-12">
-          <SelectValue placeholder="Choose an AI provider..." />
-        </SelectTrigger>
-        <SelectContent className="glass-strong border-purple-500/20">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="w-4 h-4 mr-2 animate-spin text-purple-400" />
-              <span>Loading providers...</span>
-            </div>
-          ) : providers.length > 0 ? (
-            providers.map((provider) => {
-              const Icon = getProviderIcon(provider)
-              const colorClass = getProviderColor(provider)
-              
-              return (
-                <SelectItem 
-                  key={provider.id} 
-                  value={provider.id}
-                  className="focus:bg-purple-500/10 py-3"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${colorClass} flex items-center justify-center flex-shrink-0`}>
-                      <Icon className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{provider.name}</span>
-                      <span className="text-xs text-muted-foreground">{provider.description}</span>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          provider.isLocal 
-                            ? 'bg-green-500/20 text-green-400' 
-                            : 'bg-blue-500/20 text-blue-400'
-                        }`}>
-                          {provider.isLocal ? 'Local' : 'Cloud'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </SelectItem>
-              )
-            })
-          ) : (
-            <div className="p-4 text-sm text-muted-foreground text-center">
-              No providers available
-            </div>
-          )}
-        </SelectContent>
-      </Select>
+      <div className="flex items-center space-x-3 p-4 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
+        <span className="font-medium text-white">OpenRouter</span>
+        <span className="text-xs bg-blue-500/20 text-blue-100 px-2 py-0.5 rounded-full">Cloud</span>
+        <span className="text-xs text-white">AI Provider (fixed)</span>
+      </div>
     </div>
   )
 }

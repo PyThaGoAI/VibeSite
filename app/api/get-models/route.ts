@@ -1,61 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { LLMProvider, getAvailableProviders } from '@/lib/providers/config';
 import { createProviderClient } from '@/lib/providers/provider';
+
+const OPENROUTER_PROVIDER = 'openrouter';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get the provider from the request or use the default provider
-    const searchParams = request.nextUrl.searchParams;
-    const providerParam = searchParams.get('provider');
-
-    let provider: LLMProvider;
-
-    if (providerParam && Object.values(LLMProvider).includes(providerParam as LLMProvider)) {
-      provider = providerParam as LLMProvider;
-    } else {
-      // Use the default provider from environment variables or DeepSeek as fallback
-      provider = (process.env.DEFAULT_PROVIDER as LLMProvider) || LLMProvider.OPENROUTER;
+    if (!process.env.OPENROUTER_API_KEY) {
+      return NextResponse.json(
+        { error: "Cheia API pentru OpenRouter nu este configurată." },
+        { status: 400 }
+      );
     }
 
-    // Create the provider client
-    const providerClient = createProviderClient(provider);
-
-    // Get the available models
+    const providerClient = createProviderClient(OPENROUTER_PROVIDER);
     const models = await providerClient.getModels();
-
-    // Return the list of models as JSON response
     return NextResponse.json(models);
   } catch (error) {
     console.error('Error fetching models:', error);
-
-    // Return a more specific error message if available
-    const errorMessage = error instanceof Error ? error.message : 'Error fetching models';
-
     return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
-  }
-}
-
-// Endpoint to get available providers
-export async function POST() {
-  try {
-    const providers = getAvailableProviders().map(provider => ({
-      id: provider.id,
-      name: provider.name,
-      description: provider.description,
-      isLocal: provider.isLocal,
-    }));
-
-    console.log('PROVIDERS RETURNED TO FRONTEND:', providers);
-
-    return NextResponse.json(providers);
-  } catch (error) {
-    console.error('Error fetching providers:', error);
-
-    return NextResponse.json(
-      { error: 'Error fetching providers' },
+      { error: error instanceof Error ? error.message : 'Error fetching models' },
       { status: 500 }
     );
   }
