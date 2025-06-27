@@ -1,4 +1,4 @@
-# LocalSite AI - now with Thinking Model Support!
+# VibeSite AI - now with Thinking Model Support!
 
 
 A modern web application that uses AI to generate HTML, CSS, and JavaScript code based on natural language prompts. Simply describe what you want to build, and the AI will create a complete, self-contained web page for you.
