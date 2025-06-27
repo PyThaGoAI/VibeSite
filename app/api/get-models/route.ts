@@ -48,6 +48,8 @@ export async function POST() {
       isLocal: provider.isLocal,
     }));
 
+    console.log('PROVIDERS RETURNED TO FRONTEND:', providers);
+
     return NextResponse.json(providers);
   } catch (error) {
     console.error('Error fetching providers:', error);
