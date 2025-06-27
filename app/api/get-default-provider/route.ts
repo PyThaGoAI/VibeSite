@@ -4,7 +4,7 @@ import { LLMProvider } from '@/lib/providers/config';
 export async function GET() {
   try {
     // Use the default provider from environment variables or DeepSeek as fallback
-    const defaultProvider = (process.env.DEFAULT_PROVIDER as LLMProvider) || LLMProvider.DEEPSEEK;
+    const defaultProvider = (process.env.DEFAULT_PROVIDER as LLMProvider) || LLMProvider.OPENROUTER;
 
     return NextResponse.json({ defaultProvider });
   } catch (error) {
