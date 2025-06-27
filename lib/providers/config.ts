@@ -4,6 +4,7 @@ export enum LLMProvider {
   OPENAI_COMPATIBLE = 'openai_compatible',
   OLLAMA = 'ollama',
   LM_STUDIO = 'lm_studio',
+  OPENROUTER = 'openrouter',
 }
 
 // Provider configuration interface
@@ -57,6 +58,16 @@ export const PROVIDER_CONFIGS: Record<LLMProvider, ProviderConfig> = {
     apiKeyEnvVar: null, // LM Studio doesn't require an API key
     defaultBaseUrl: 'http://localhost:1234/v1',
     isLocal: true,
+  },
+  [LLMProvider.OPENROUTER]: {
+    id: LLMProvider.OPENROUTER,
+    name: 'OpenRouter',
+    description: 'OpenRouter API (unifică mai multe LLM-uri)',
+    baseUrlEnvVar: 'OPENROUTER_API_BASE',
+    apiKeyEnvVar: 'OPENROUTER_API_KEY',
+    defaultBaseUrl: 'https://openrouter.ai/api/v1',
+    isLocal: false,
+    examples: ['OpenRouter'],
   },
 };
 

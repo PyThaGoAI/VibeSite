@@ -37,6 +37,8 @@ export function createProviderClient(provider: LLMProvider): LLMProviderClient {
       return new OllamaProvider();
     case LLMProvider.LM_STUDIO:
       return new LMStudioProvider();
+    case LLMProvider.OPENROUTER:
+      return new OpenAICompatibleProvider(LLMProvider.OPENROUTER);
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }
