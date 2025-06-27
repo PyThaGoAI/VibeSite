@@ -37,8 +37,14 @@ export function createProviderClient(provider: LLMProvider): LLMProviderClient {
       return new OllamaProvider();
     case LLMProvider.LM_STUDIO:
       return new LMStudioProvider();
-    case LLMProvider.OPENROUTER:
+    case LLMProvider.OPENROUTER: {
+      // DEBUG: loghează cheia și endpointul folosite pentru OpenRouter
+      const apiKey = getProviderApiKey(LLMProvider.OPENROUTER);
+      const baseURL = getProviderBaseUrl(LLMProvider.OPENROUTER);
+      console.log('[DEBUG][OPENROUTER] API KEY:', apiKey);
+      console.log('[DEBUG][OPENROUTER] BASE URL:', baseURL);
       return new OpenAICompatibleProvider(LLMProvider.OPENROUTER);
+    }
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }
