@@ -27,7 +27,11 @@ RUN echo 'if [ -n "$OPENAI_COMPATIBLE_API_KEY" ]; then echo "OPENAI_COMPATIBLE_A
 RUN echo 'echo "" >> .env.local' >> /app/entrypoint.sh
 RUN echo 'echo "# Google Gemini Configuration (Cloud AI models)" >> .env.local' >> /app/entrypoint.sh
 RUN echo 'echo "GEMINI_API_BASE=${GEMINI_API_BASE:-https://generativelanguage.googleapis.com/v1beta}" >> .env.local' >> /app/entrypoint.sh
-RUN echo 'echo "GEMINI_API_KEY=${GEMINI_API_KEY}" >> .env.local' >> /app/entrypoint.sh
+RUN echo 'if [ -n "$GEMINI_API_KEY" ]; then echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> .env.local; fi' >> /app/entrypoint.sh
+RUN echo 'echo "" >> .env.local' >> /app/entrypoint.sh
+RUN echo 'echo "# OpenRouter Configuration (Cloud AI models)" >> .env.local' >> /app/entrypoint.sh
+RUN echo 'echo "OPENROUTER_API_BASE=${OPENROUTER_API_BASE:-https://openrouter.ai/api/v1}" >> .env.local' >> /app/entrypoint.sh
+RUN echo 'if [ -n "$OPENROUTER_API_KEY" ]; then echo "OPENROUTER_API_KEY=$OPENROUTER_API_KEY" >> .env.local; fi' >> /app/entrypoint.sh
 RUN echo 'echo "" >> .env.local' >> /app/entrypoint.sh
 RUN echo 'echo "# Ollama Configuration (Local AI models)" >> .env.local' >> /app/entrypoint.sh
 RUN echo 'echo "OLLAMA_API_BASE=http://host.docker.internal:11434" >> .env.local' >> /app/entrypoint.sh
