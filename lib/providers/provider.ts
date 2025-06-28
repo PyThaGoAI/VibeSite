@@ -131,8 +131,9 @@ class GeminiProvider implements LLMProviderClient {
     this.apiKey = getProviderApiKey(LLMProvider.GEMINI) || '';
     this.baseUrl = getProviderBaseUrl(LLMProvider.GEMINI) || '';
     
-    if (!this.apiKey) {
-      throw new Error('Google Gemini API key not found. Please configure GEMINI_API_KEY in your environment variables.');
+    // Check for placeholder or invalid API key
+    if (!this.apiKey || this.apiKey.includes('your_') || this.apiKey.includes('_here')) {
+      throw new Error('Google Gemini API key is not properly configured. Please set a valid GEMINI_API_KEY in your environment variables.');
     }
   }
 
@@ -141,6 +142,9 @@ class GeminiProvider implements LLMProviderClient {
       const response = await fetch(`${this.baseUrl}/models?key=${this.apiKey}`);
       
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error('Invalid Google Gemini API key. Please check your GEMINI_API_KEY configuration.');
+        }
         throw new Error(`Error fetching Gemini models: ${response.statusText}`);
       }
 
@@ -158,7 +162,13 @@ class GeminiProvider implements LLMProviderClient {
       }));
     } catch (error) {
       console.error('Error fetching Gemini models:', error);
-      // Return default models if API call fails
+      
+      // If it's an authentication error, re-throw it
+      if (error instanceof Error && (error.message.includes('Invalid') || error.message.includes('401') || error.message.includes('403'))) {
+        throw error;
+      }
+      
+      // Return default models if API call fails for other reasons
       return [
         { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash (Experimental)' },
         { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
@@ -199,6 +209,9 @@ class GeminiProvider implements LLMProviderClient {
       );
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error('Invalid Google Gemini API key. Please check your GEMINI_API_KEY configuration.');
+        }
         throw new Error(`Error generating code with Gemini: ${response.statusText}`);
       }
 
@@ -263,6 +276,14 @@ class GeminiProvider implements LLMProviderClient {
       });
     } catch (error) {
       console.error('Error generating code with Gemini:', error);
+      
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('Invalid') || error.message.includes('401') || error.message.includes('403')) {
+          throw new Error('Google Gemini API key authentication failed. Please verify your GEMINI_API_KEY is valid.');
+        }
+      }
+      
       throw error;
     }
   }

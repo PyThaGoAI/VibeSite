@@ -24,39 +24,114 @@ export async function POST(request: NextRequest) {
     if (providerParam && Object.values(LLMProvider).includes(providerParam as LLMProvider)) {
       provider = providerParam as LLMProvider;
     } else {
-      // Use the default provider from environment variables or DeepSeek as fallback
+      // Use the default provider from environment variables or OpenRouter as fallback
       provider = (process.env.DEFAULT_PROVIDER as LLMProvider) || LLMProvider.OPENROUTER;
     }
 
-    // Validare chei și endpointuri pentru fiecare provider popular
-    const providerEnvChecks: Record<string, { key?: string; base?: string; }> = {
-      [LLMProvider.OPENROUTER]: { key: process.env.OPENROUTER_API_KEY, base: process.env.OPENROUTER_API_BASE },
-      [LLMProvider.DEEPSEEK]: { key: process.env.DEEPSEEK_API_KEY, base: process.env.DEEPSEEK_API_BASE },
-      [LLMProvider.OPENAI]: { key: process.env.OPENAI_API_KEY, base: process.env.OPENAI_API_BASE },
-      [LLMProvider.OPENAI_COMPATIBLE]: { key: process.env.OPENAI_COMPATIBLE_API_KEY, base: process.env.OPENAI_COMPATIBLE_BASE_URL },
-      [LLMProvider.ANTHROPIC]: { key: process.env.ANTHROPIC_API_KEY, base: process.env.ANTHROPIC_API_BASE },
-      [LLMProvider.GROQ]: { key: process.env.GROQ_API_KEY, base: process.env.GROQ_API_BASE },
-      [LLMProvider.TOGETHER]: { key: process.env.TOGETHER_API_KEY, base: process.env.TOGETHER_API_BASE },
-      [LLMProvider.OLLAMA]: { base: process.env.OLLAMA_API_BASE },
-      [LLMProvider.LM_STUDIO]: { base: process.env.LM_STUDIO_API_BASE },
-      [LLMProvider.MISTRAL]: { key: process.env.MISTRAL_API_KEY, base: process.env.MISTRAL_API_BASE },
-      [LLMProvider.COHERE]: { key: process.env.COHERE_API_KEY, base: process.env.COHERE_API_BASE },
-      [LLMProvider.GEMINI]: { key: process.env.GEMINI_API_KEY, base: process.env.GEMINI_API_BASE },
-      [LLMProvider.LAMINI]: { key: process.env.LAMINI_API_KEY, base: process.env.LAMINI_API_BASE },
-      [LLMProvider.CUSTOM]: { key: process.env.CUSTOM_LLM_API_KEY, base: process.env.CUSTOM_LLM_API_BASE },
+    console.log(`[DEBUG] Using provider: ${provider}`);
+
+    // Validate provider configuration before creating client
+    const providerEnvChecks: Record<string, { key?: string; base?: string; keyEnvVar?: string; baseEnvVar?: string; }> = {
+      [LLMProvider.OPENROUTER]: { 
+        key: process.env.OPENROUTER_API_KEY, 
+        base: process.env.OPENROUTER_API_BASE,
+        keyEnvVar: 'OPENROUTER_API_KEY',
+        baseEnvVar: 'OPENROUTER_API_BASE'
+      },
+      [LLMProvider.DEEPSEEK]: { 
+        key: process.env.DEEPSEEK_API_KEY, 
+        base: process.env.DEEPSEEK_API_BASE,
+        keyEnvVar: 'DEEPSEEK_API_KEY',
+        baseEnvVar: 'DEEPSEEK_API_BASE'
+      },
+      [LLMProvider.OPENAI]: { 
+        key: process.env.OPENAI_API_KEY, 
+        base: process.env.OPENAI_API_BASE,
+        keyEnvVar: 'OPENAI_API_KEY',
+        baseEnvVar: 'OPENAI_API_BASE'
+      },
+      [LLMProvider.OPENAI_COMPATIBLE]: { 
+        key: process.env.OPENAI_COMPATIBLE_API_KEY, 
+        base: process.env.OPENAI_COMPATIBLE_BASE_URL,
+        keyEnvVar: 'OPENAI_COMPATIBLE_API_KEY',
+        baseEnvVar: 'OPENAI_COMPATIBLE_BASE_URL'
+      },
+      [LLMProvider.ANTHROPIC]: { 
+        key: process.env.ANTHROPIC_API_KEY, 
+        base: process.env.ANTHROPIC_API_BASE,
+        keyEnvVar: 'ANTHROPIC_API_KEY',
+        baseEnvVar: 'ANTHROPIC_API_BASE'
+      },
+      [LLMProvider.GROQ]: { 
+        key: process.env.GROQ_API_KEY, 
+        base: process.env.GROQ_API_BASE,
+        keyEnvVar: 'GROQ_API_KEY',
+        baseEnvVar: 'GROQ_API_BASE'
+      },
+      [LLMProvider.TOGETHER]: { 
+        key: process.env.TOGETHER_API_KEY, 
+        base: process.env.TOGETHER_API_BASE,
+        keyEnvVar: 'TOGETHER_API_KEY',
+        baseEnvVar: 'TOGETHER_API_BASE'
+      },
+      [LLMProvider.OLLAMA]: { 
+        base: process.env.OLLAMA_API_BASE,
+        baseEnvVar: 'OLLAMA_API_BASE'
+      },
+      [LLMProvider.LM_STUDIO]: { 
+        base: process.env.LM_STUDIO_API_BASE,
+        baseEnvVar: 'LM_STUDIO_API_BASE'
+      },
+      [LLMProvider.MISTRAL]: { 
+        key: process.env.MISTRAL_API_KEY, 
+        base: process.env.MISTRAL_API_BASE,
+        keyEnvVar: 'MISTRAL_API_KEY',
+        baseEnvVar: 'MISTRAL_API_BASE'
+      },
+      [LLMProvider.COHERE]: { 
+        key: process.env.COHERE_API_KEY, 
+        base: process.env.COHERE_API_BASE,
+        keyEnvVar: 'COHERE_API_KEY',
+        baseEnvVar: 'COHERE_API_BASE'
+      },
+      [LLMProvider.GEMINI]: { 
+        key: process.env.GEMINI_API_KEY, 
+        base: process.env.GEMINI_API_BASE,
+        keyEnvVar: 'GEMINI_API_KEY',
+        baseEnvVar: 'GEMINI_API_BASE'
+      },
+      [LLMProvider.LAMINI]: { 
+        key: process.env.LAMINI_API_KEY, 
+        base: process.env.LAMINI_API_BASE,
+        keyEnvVar: 'LAMINI_API_KEY',
+        baseEnvVar: 'LAMINI_API_BASE'
+      },
+      [LLMProvider.CUSTOM]: { 
+        key: process.env.CUSTOM_LLM_API_KEY, 
+        base: process.env.CUSTOM_LLM_API_BASE,
+        keyEnvVar: 'CUSTOM_LLM_API_KEY',
+        baseEnvVar: 'CUSTOM_LLM_API_BASE'
+      },
     };
 
     const envCheck = providerEnvChecks[provider];
     if (envCheck) {
-      if (envCheck.key !== undefined && !envCheck.key) {
+      // Check API key for providers that require it
+      if (envCheck.key !== undefined && (!envCheck.key || envCheck.key.includes('your_') || envCheck.key.includes('_here'))) {
         return new Response(
-          JSON.stringify({ error: `Cheia API pentru providerul '${provider}' nu este configurată. Te rugăm să setezi variabila corespunzătoare în .env.local (ex: ${Object.keys(envCheck).find(k => k === 'key')?.toUpperCase()})` }),
+          JSON.stringify({ 
+            error: `API key for provider '${provider}' is not properly configured. Please set a valid ${envCheck.keyEnvVar} in your .env.local file.` 
+          }),
           { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
       }
+      
+      // Check base URL for providers that require it
       if (envCheck.base !== undefined && !envCheck.base) {
         return new Response(
-          JSON.stringify({ error: `Endpointul (BASE URL) pentru providerul '${provider}' nu este configurat. Te rugăm să setezi variabila corespunzătoare în .env.local (ex: ${Object.keys(envCheck).find(k => k === 'base')?.toUpperCase()})` }),
+          JSON.stringify({ 
+            error: `Base URL for provider '${provider}' is not configured. Please set ${envCheck.baseEnvVar} in your .env.local file.` 
+          }),
           { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
       }
@@ -87,6 +162,11 @@ export async function POST(request: NextRequest) {
       // Handle specific authentication errors
       if (error.message.includes('401') || error.message.includes('No auth credentials')) {
         errorMessage = 'Authentication failed. Please check your API key configuration.';
+      }
+      
+      // Handle Gemini-specific errors
+      if (error.message.includes('Gemini') && error.message.includes('API key')) {
+        errorMessage = 'Google Gemini API key is not properly configured. Please set a valid GEMINI_API_KEY in your .env.local file or use a different provider.';
       }
     }
 
