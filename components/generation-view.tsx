@@ -88,52 +88,51 @@ export function GenerationView({
   const prevContentRef = useRef<string>("")
 
   const prepareHtmlContent = (code: string): string => {
-    const darkModeStyle = `
-      <style>
-        :root {
-          color-scheme: dark;
-        }
-        html, body {
-          background-color: #010101;
-          color: #ffffff;
-          min-height: 100%;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
+    // Clean the code first - remove any markdown formatting
+    let cleanCode = code.trim()
+    
+    // Remove markdown code blocks if present
+    cleanCode = cleanCode.replace(/^```html\s*\n?/i, '')
+    cleanCode = cleanCode.replace(/\n?```\s*$/i, '')
+    cleanCode = cleanCode.replace(/^```\s*\n?/i, '')
+    
+    // If the code doesn't start with DOCTYPE or html tag, wrap it
+    if (!cleanCode.toLowerCase().includes('<!doctype') && !cleanCode.toLowerCase().includes('<html')) {
+      cleanCode = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated Page</title>
+    <style>
         body {
-          margin: 0;
-          padding: 0;
-          transition: background-color 0.2s ease;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #ffffff;
+            color: #333333;
         }
-      </style>
-    `;
-
-    let result = "";
-    if (code.includes('<head>')) {
-      result = code.replace('<head>', `<head>${darkModeStyle}`);
-    } else if (code.includes('<html>')) {
-      result = code.replace('<html>', `<html><head>${darkModeStyle}</head>`);
-    } else {
-      result = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            ${darkModeStyle}
-          </head>
-          <body>
-            ${code}
-          </body>
-        </html>
-      `;
+    </style>
+</head>
+<body>
+    ${cleanCode}
+</body>
+</html>`
     }
-    return result;
+
+    return cleanCode;
   };
 
   const debouncedUpdatePreview = useCallback(
     debounce((code: string) => {
-      const preparedHtml = prepareHtmlContent(code);
-      prevContentRef.current = preparedHtml;
-      setPreviewContent(preparedHtml);
-    }, 50),
+      if (code && code.trim()) {
+        const preparedHtml = prepareHtmlContent(code);
+        prevContentRef.current = preparedHtml;
+        setPreviewContent(preparedHtml);
+        // Force iframe refresh
+        setPreviewKey(prev => prev + 1);
+      }
+    }, 300),
     []
   );
 
@@ -142,7 +141,7 @@ export function GenerationView({
     setOriginalCode(generatedCode)
     setHasChanges(false)
 
-    if (generatedCode) {
+    if (generatedCode && generatedCode.trim()) {
       debouncedUpdatePreview(generatedCode);
     }
   }, [generatedCode, debouncedUpdatePreview])
@@ -154,7 +153,7 @@ export function GenerationView({
       setHasChanges(false)
     }
 
-    if (editedCode) {
+    if (editedCode && editedCode.trim()) {
       debouncedUpdatePreview(editedCode);
     }
   }, [editedCode, originalCode, debouncedUpdatePreview])
@@ -178,10 +177,12 @@ export function GenerationView({
 
   const refreshPreview = () => {
     const currentCode = isEditable ? editedCode : originalCode;
-    debouncedUpdatePreview.flush();
-    const preparedHtml = prepareHtmlContent(currentCode);
-    setPreviewContent(preparedHtml);
-    setPreviewKey(prevKey => prevKey + 1);
+    if (currentCode && currentCode.trim()) {
+      debouncedUpdatePreview.flush();
+      const preparedHtml = prepareHtmlContent(currentCode);
+      setPreviewContent(preparedHtml);
+      setPreviewKey(prevKey => prevKey + 1);
+    }
   }
 
   const downloadCode = () => {
@@ -510,7 +511,7 @@ export function GenerationView({
                         : "w-[375px] max-h-full"
                   }`}
                 >
-                  {!originalCode && !editedCode ? (
+                  {!previewContent ? (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       {isGenerating ? (
                         <div className="text-center">
@@ -528,11 +529,11 @@ export function GenerationView({
                       <iframe
                         key={previewKey}
                         srcDoc={previewContent}
-                        className="w-full h-full absolute inset-0 z-10 rounded-2xl"
-                        title="Preview"
-                        sandbox="allow-scripts"
+                        className="w-full h-full absolute inset-0 z-10 rounded-2xl border-0"
+                        title="Live Preview"
+                        sandbox="allow-scripts allow-same-origin"
                         style={{
-                          backgroundColor: '#010101',
+                          backgroundColor: '#ffffff',
                           opacity: 1,
                           transition: 'opacity 0.15s ease-in-out'
                         }}
@@ -755,7 +756,7 @@ export function GenerationView({
                           : "w-[375px] max-h-full"
                     }`}
                   >
-                    {!originalCode && !editedCode ? (
+                    {!previewContent ? (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                         {isGenerating ? (
                           <div className="text-center">
@@ -777,11 +778,11 @@ export function GenerationView({
                         <iframe
                           key={previewKey}
                           srcDoc={previewContent}
-                          className="w-full h-full absolute inset-0 z-10 rounded-2xl"
-                          title="Preview"
-                          sandbox="allow-scripts"
+                          className="w-full h-full absolute inset-0 z-10 rounded-2xl border-0"
+                          title="Live Preview"
+                          sandbox="allow-scripts allow-same-origin"
                           style={{
-                            backgroundColor: '#010101',
+                            backgroundColor: '#ffffff',
                             opacity: 1,
                             transition: 'opacity 0.15s ease-in-out'
                           }}
