@@ -85,19 +85,28 @@ export function GenerationView({
   const [newPrompt, setNewPrompt] = useState("")
   const [isFullscreen, setIsFullscreen] = useState(false)
 
-  const prevContentRef = useRef<string>("")
+  const iframeRef = useRef<HTMLIFrameElement>(null)
 
-  const prepareHtmlContent = (code: string): string => {
-    // Clean the code first - remove any markdown formatting
+  const cleanAndPrepareHtml = (code: string): string => {
+    if (!code || !code.trim()) return "";
+    
+    // Clean the code thoroughly
     let cleanCode = code.trim()
     
-    // Remove markdown code blocks if present
-    cleanCode = cleanCode.replace(/^```html\s*\n?/i, '')
-    cleanCode = cleanCode.replace(/\n?```\s*$/i, '')
-    cleanCode = cleanCode.replace(/^```\s*\n?/i, '')
+    // Remove ALL markdown formatting
+    cleanCode = cleanCode.replace(/^```html\s*\n?/gmi, '')
+    cleanCode = cleanCode.replace(/^```\s*\n?/gmi, '')
+    cleanCode = cleanCode.replace(/\n?```\s*$/gmi, '')
+    cleanCode = cleanCode.replace(/```$/gmi, '')
     
-    // If the code doesn't start with DOCTYPE or html tag, wrap it
-    if (!cleanCode.toLowerCase().includes('<!doctype') && !cleanCode.toLowerCase().includes('<html')) {
+    // Remove any leading/trailing whitespace again
+    cleanCode = cleanCode.trim()
+    
+    // If it doesn't look like HTML, wrap it
+    if (!cleanCode.toLowerCase().includes('<!doctype') && 
+        !cleanCode.toLowerCase().includes('<html') &&
+        !cleanCode.toLowerCase().includes('<body')) {
+      
       cleanCode = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -105,12 +114,16 @@ export function GenerationView({
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generated Page</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #ffffff;
-            color: #333333;
+            line-height: 1.6;
+            color: #333;
+            background: #fff;
         }
     </style>
 </head>
@@ -123,28 +136,41 @@ export function GenerationView({
     return cleanCode;
   };
 
+  const updatePreview = useCallback((code: string) => {
+    if (!code || !code.trim()) {
+      setPreviewContent("");
+      return;
+    }
+
+    try {
+      const cleanedHtml = cleanAndPrepareHtml(code);
+      console.log('[DEBUG] Cleaned HTML for preview:', cleanedHtml.substring(0, 200) + '...');
+      
+      setPreviewContent(cleanedHtml);
+      setPreviewKey(prev => prev + 1);
+    } catch (error) {
+      console.error('Error preparing HTML for preview:', error);
+      setPreviewContent("");
+    }
+  }, []);
+
   const debouncedUpdatePreview = useCallback(
     debounce((code: string) => {
-      if (code && code.trim()) {
-        const preparedHtml = prepareHtmlContent(code);
-        prevContentRef.current = preparedHtml;
-        setPreviewContent(preparedHtml);
-        // Force iframe refresh
-        setPreviewKey(prev => prev + 1);
-      }
-    }, 300),
-    []
+      updatePreview(code);
+    }, 500),
+    [updatePreview]
   );
 
+  // Update preview when code changes
   useEffect(() => {
     setEditedCode(generatedCode)
     setOriginalCode(generatedCode)
     setHasChanges(false)
 
     if (generatedCode && generatedCode.trim()) {
-      debouncedUpdatePreview(generatedCode);
+      updatePreview(generatedCode);
     }
-  }, [generatedCode, debouncedUpdatePreview])
+  }, [generatedCode, updatePreview])
 
   useEffect(() => {
     if (editedCode !== originalCode) {
@@ -157,6 +183,25 @@ export function GenerationView({
       debouncedUpdatePreview(editedCode);
     }
   }, [editedCode, originalCode, debouncedUpdatePreview])
+
+  // Force iframe refresh when content changes
+  useEffect(() => {
+    if (iframeRef.current && previewContent) {
+      const iframe = iframeRef.current;
+      
+      // Write content directly to iframe
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (doc) {
+          doc.open();
+          doc.write(previewContent);
+          doc.close();
+        }
+      } catch (error) {
+        console.error('Error writing to iframe:', error);
+      }
+    }
+  }, [previewContent, previewKey]);
 
   const saveChanges = () => {
     setOriginalCode(editedCode)
@@ -178,10 +223,7 @@ export function GenerationView({
   const refreshPreview = () => {
     const currentCode = isEditable ? editedCode : originalCode;
     if (currentCode && currentCode.trim()) {
-      debouncedUpdatePreview.flush();
-      const preparedHtml = prepareHtmlContent(currentCode);
-      setPreviewContent(preparedHtml);
-      setPreviewKey(prevKey => prevKey + 1);
+      updatePreview(currentCode);
     }
   }
 
@@ -527,15 +569,14 @@ export function GenerationView({
                   ) : (
                     <div className="w-full h-full relative">
                       <iframe
+                        ref={iframeRef}
                         key={previewKey}
-                        srcDoc={previewContent}
                         className="w-full h-full absolute inset-0 z-10 rounded-2xl border-0"
                         title="Live Preview"
-                        sandbox="allow-scripts allow-same-origin"
+                        sandbox="allow-scripts allow-same-origin allow-forms"
                         style={{
                           backgroundColor: '#ffffff',
                           opacity: 1,
-                          transition: 'opacity 0.15s ease-in-out'
                         }}
                       />
                       {isGenerating && (
@@ -776,15 +817,14 @@ export function GenerationView({
                     ) : (
                       <div className="w-full h-full relative">
                         <iframe
+                          ref={iframeRef}
                           key={previewKey}
-                          srcDoc={previewContent}
                           className="w-full h-full absolute inset-0 z-10 rounded-2xl border-0"
                           title="Live Preview"
-                          sandbox="allow-scripts allow-same-origin"
+                          sandbox="allow-scripts allow-same-origin allow-forms"
                           style={{
                             backgroundColor: '#ffffff',
                             opacity: 1,
-                            transition: 'opacity 0.15s ease-in-out'
                           }}
                         />
                         {isGenerating && (
