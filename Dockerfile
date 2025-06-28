@@ -25,6 +25,10 @@ RUN echo 'echo "# OpenAI Compatible Configuration (Cloud AI models)" >> .env.loc
 RUN echo 'echo "OPENAI_COMPATIBLE_API_BASE=${OPENAI_COMPATIBLE_API_BASE:-https://api.openai.com/v1}" >> .env.local' >> /app/entrypoint.sh
 RUN echo 'if [ -n "$OPENAI_COMPATIBLE_API_KEY" ]; then echo "OPENAI_COMPATIBLE_API_KEY=$OPENAI_COMPATIBLE_API_KEY" >> .env.local; fi' >> /app/entrypoint.sh
 RUN echo 'echo "" >> .env.local' >> /app/entrypoint.sh
+RUN echo 'echo "# Google Gemini Configuration (Cloud AI models)" >> .env.local' >> /app/entrypoint.sh
+RUN echo 'echo "GEMINI_API_BASE=${GEMINI_API_BASE:-https://generativelanguage.googleapis.com/v1beta}" >> .env.local' >> /app/entrypoint.sh
+RUN echo 'if [ -n "$GEMINI_API_KEY" ]; then echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> .env.local; fi' >> /app/entrypoint.sh
+RUN echo 'echo "" >> .env.local' >> /app/entrypoint.sh
 RUN echo 'echo "# Ollama Configuration (Local AI models)" >> .env.local' >> /app/entrypoint.sh
 RUN echo 'echo "OLLAMA_API_BASE=http://host.docker.internal:11434" >> .env.local' >> /app/entrypoint.sh
 RUN echo 'echo "" >> .env.local' >> /app/entrypoint.sh
