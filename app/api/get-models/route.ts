@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if required environment variables are set for the provider
+    // Check if required environment variables are set for cloud providers
     if (provider === LLMProvider.GEMINI && !process.env.GEMINI_API_KEY) {
       return NextResponse.json(
         { error: "Google Gemini API key is not configured. Please set GEMINI_API_KEY in your .env.local file." },
@@ -58,9 +58,34 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const providerClient = createProviderClient(provider);
-    const models = await providerClient.getModels();
-    return NextResponse.json(models);
+    try {
+      const providerClient = createProviderClient(provider);
+      const models = await providerClient.getModels();
+      return NextResponse.json(models);
+    } catch (providerError) {
+      console.error(`Error with provider ${provider}:`, providerError);
+      
+      // Handle local provider connection errors gracefully
+      if (provider === LLMProvider.LM_STUDIO || provider === LLMProvider.OLLAMA) {
+        if (providerError instanceof Error && (
+          providerError.message.includes('not running') ||
+          providerError.message.includes('not accessible') ||
+          providerError.message.includes('Cannot connect')
+        )) {
+          return NextResponse.json(
+            { 
+              error: providerError.message,
+              isConnectionError: true,
+              provider: provider
+            },
+            { status: 503 } // Service Unavailable
+          );
+        }
+      }
+      
+      // Re-throw other errors
+      throw providerError;
+    }
   } catch (error) {
     console.error('Error fetching models:', error);
     return NextResponse.json(

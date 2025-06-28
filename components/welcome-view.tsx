@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Loader2, Sparkles, Zap, Code2, Palette, Wand2, ArrowRight, Settings, Brain, Cpu, Globe, Rocket, Star, Crown, Diamond, Gem } from "lucide-react"
+import { Loader2, Sparkles, Zap, Code2, Palette, Wand2, ArrowRight, Settings, Brain, Cpu, Globe, Rocket, Star, Crown, Diamond, Gem, AlertCircle, Wifi, WifiOff } from "lucide-react"
 import { toast } from "sonner"
 import { ProviderSelector } from "@/components/provider-selector"
 import { PremiumFooter } from "@/components/premium-footer"
@@ -51,6 +51,7 @@ export function WelcomeView({
   const [isLoadingModels, setIsLoadingModels] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [providerStatus, setProviderStatus] = useState<'connected' | 'disconnected' | 'unknown'>('unknown')
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -98,6 +99,7 @@ export function WelcomeView({
       setIsLoadingModels(true)
       setSelectedModel("")
       setModels([])
+      setProviderStatus('unknown')
 
       try {
         const response = await fetch(`/api/get-models?provider=${selectedProvider}`)
@@ -108,6 +110,15 @@ export function WelcomeView({
         if (!response.ok) {
           if (data && data.error) {
             console.error('[DEBUG] API Error:', data.error)
+            
+            // Handle connection errors for local providers
+            if (data.isConnectionError && (selectedProvider === 'lm_studio' || selectedProvider === 'ollama')) {
+              setProviderStatus('disconnected')
+              
+              // Don't show toast for connection errors, just update the UI
+              console.log(`[DEBUG] ${selectedProvider} is not accessible:`, data.error)
+              return
+            }
             
             // Only show toast for non-configuration errors
             if (!data.error.includes('not configured') && !data.error.includes('Please set')) {
@@ -122,6 +133,8 @@ export function WelcomeView({
 
         console.log('[DEBUG] Successfully fetched models:', data)
         setModels(data)
+        setProviderStatus('connected')
+        
         if (data.length > 0) {
           setSelectedModel(data[0].id)
           console.log('[DEBUG] Auto-selected first model:', data[0].id)
@@ -130,10 +143,14 @@ export function WelcomeView({
         console.error('Error fetching models:', error)
         setModels([])
         setSelectedModel("")
+        setProviderStatus('disconnected')
 
         // Only show user-facing error for non-configuration issues
         if (error instanceof Error) {
-          if (!error.message.includes('not configured') && !error.message.includes('Please set')) {
+          if (!error.message.includes('not configured') && 
+              !error.message.includes('Please set') &&
+              !error.message.includes('not running') &&
+              !error.message.includes('not accessible')) {
             toast.error(error.message || 'Models could not be loaded. Please try again later.');
           }
         }
@@ -223,6 +240,34 @@ export function WelcomeView({
     }
   }
 
+  const getProviderStatusIcon = () => {
+    if (selectedProvider === 'lm_studio' || selectedProvider === 'ollama') {
+      switch (providerStatus) {
+        case 'connected':
+          return <Wifi className="w-4 h-4 text-green-500" />
+        case 'disconnected':
+          return <WifiOff className="w-4 h-4 text-red-500" />
+        default:
+          return <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />
+      }
+    }
+    return null
+  }
+
+  const getProviderStatusMessage = () => {
+    if (selectedProvider === 'lm_studio' || selectedProvider === 'ollama') {
+      switch (providerStatus) {
+        case 'connected':
+          return `${providerConfigs[selectedProvider as keyof typeof providerConfigs]?.name} is running`
+        case 'disconnected':
+          return `${providerConfigs[selectedProvider as keyof typeof providerConfigs]?.name} is not accessible`
+        default:
+          return 'Checking connection...'
+      }
+    }
+    return null
+  }
+
   return (
     <div className="min-h-screen w-full relative overflow-hidden flex flex-col">
       {/* Enhanced Animated Background */}
@@ -256,8 +301,10 @@ export function WelcomeView({
               </div>
             </div>
             <div className="flex items-center space-x-4 flex-shrink-0">
-              <div className="status-online w-4 h-4 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-muted-foreground hidden sm:inline font-medium">AI Online</span>
+              {getProviderStatusIcon()}
+              <span className="text-sm text-muted-foreground hidden sm:inline font-medium">
+                {getProviderStatusMessage() || 'AI Online'}
+              </span>
               <div className="px-3 py-1 rounded-full glass text-xs font-semibold text-purple-300">
                 v2025.1
               </div>
@@ -315,7 +362,7 @@ export function WelcomeView({
                     </div>
                     <Button
                       onClick={onGenerate}
-                      disabled={!prompt.trim() || !selectedModel}
+                      disabled={!prompt.trim() || !selectedModel || providerStatus === 'disconnected'}
                       className="btn-premium h-14 px-8 text-lg font-semibold order-1 sm:order-2 flex-shrink-0 group"
                     >
                       <Zap className="w-5 h-5 mr-3 flex-shrink-0 group-hover:animate-pulse" />
@@ -339,6 +386,7 @@ export function WelcomeView({
                     <span className="font-semibold text-lg text-display">AI Provider</span>
                     <p className="text-sm text-muted-foreground">Choose your AI engine</p>
                   </div>
+                  {getProviderStatusIcon()}
                 </div>
                 <Select value={selectedProvider} onValueChange={setSelectedProvider}>
                   <SelectTrigger className="input-premium h-14 w-full text-lg">
@@ -360,6 +408,21 @@ export function WelcomeView({
                     ))}
                   </SelectContent>
                 </Select>
+                
+                {/* Provider Status Message */}
+                {(selectedProvider === 'lm_studio' || selectedProvider === 'ollama') && providerStatus === 'disconnected' && (
+                  <div className="mt-4 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-start space-x-3">
+                    <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="text-yellow-300 font-medium mb-1">
+                        {selectedProvider === 'lm_studio' ? 'LM Studio' : 'Ollama'} is not running
+                      </p>
+                      <p className="text-yellow-200/80">
+                        Please start {selectedProvider === 'lm_studio' ? 'LM Studio and load a model' : 'Ollama'} to use local AI models.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Model Selection */}
@@ -373,9 +436,13 @@ export function WelcomeView({
                     <p className="text-sm text-muted-foreground">Select intelligence level</p>
                   </div>
                 </div>
-                <Select value={selectedModel} onValueChange={setSelectedModel} disabled={!selectedProvider || isLoadingModels}>
+                <Select value={selectedModel} onValueChange={setSelectedModel} disabled={!selectedProvider || isLoadingModels || providerStatus === 'disconnected'}>
                   <SelectTrigger className="input-premium h-14 w-full text-lg">
-                    <SelectValue placeholder={selectedProvider ? "Choose a model..." : "Select a provider first"} />
+                    <SelectValue placeholder={
+                      !selectedProvider ? "Select a provider first" :
+                      providerStatus === 'disconnected' ? "Provider not available" :
+                      "Choose a model..."
+                    } />
                   </SelectTrigger>
                   <SelectContent className="glass-strong border-purple-500/20 w-full">
                     {isLoadingModels ? (
@@ -394,7 +461,9 @@ export function WelcomeView({
                       ))
                     ) : (
                       <div className="p-6 text-center text-muted-foreground">
-                        {selectedProvider ? "No models available" : "Select a provider first"}
+                        {!selectedProvider ? "Select a provider first" :
+                         providerStatus === 'disconnected' ? "Provider not available" :
+                         "No models available"}
                       </div>
                     )}
                   </SelectContent>

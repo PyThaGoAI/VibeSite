@@ -316,7 +316,9 @@ class OllamaProvider implements LLMProviderClient {
 
   async getModels() {
     try {
-      const response = await fetch(`${this.baseUrl}/api/tags`);
+      const response = await fetch(`${this.baseUrl}/api/tags`, {
+        signal: AbortSignal.timeout(5000) // 5 second timeout
+      });
       if (!response.ok) {
         throw new Error(`Error fetching Ollama models: ${response.statusText}`);
       }
@@ -328,6 +330,17 @@ class OllamaProvider implements LLMProviderClient {
       })) : [];
     } catch (error) {
       console.error('Error fetching Ollama models:', error);
+      
+      // Check if it's a connection error
+      if (error instanceof Error && (
+        error.message.includes('ECONNREFUSED') || 
+        error.message.includes('fetch failed') ||
+        error.message.includes('Connection error') ||
+        error.name === 'TimeoutError'
+      )) {
+        throw new Error('Ollama server is not running or not accessible. Please start Ollama and ensure it\'s running on the configured port.');
+      }
+      
       throw new Error('Cannot connect to Ollama. Is the server running?');
     }
   }
@@ -348,6 +361,7 @@ class OllamaProvider implements LLMProviderClient {
           stream: true,
           options: maxTokens ? { num_predict: maxTokens } : undefined, // Ollama uses num_predict for max tokens
         }),
+        signal: AbortSignal.timeout(30000) // 30 second timeout
       });
 
       if (!response.ok) {
@@ -399,6 +413,15 @@ class OllamaProvider implements LLMProviderClient {
       });
     } catch (error) {
       console.error('Error generating code with Ollama:', error);
+      
+      if (error instanceof Error && (
+        error.message.includes('ECONNREFUSED') || 
+        error.message.includes('fetch failed') ||
+        error.name === 'TimeoutError'
+      )) {
+        throw new Error('Ollama server is not running or not accessible. Please start Ollama and ensure it\'s running on the configured port.');
+      }
+      
       throw error;
     }
   }
@@ -407,16 +430,28 @@ class OllamaProvider implements LLMProviderClient {
 // LM Studio Provider implementation
 class LMStudioProvider implements LLMProviderClient {
   private client: OpenAI;
+  private baseUrl: string;
 
   constructor() {
+    this.baseUrl = getProviderBaseUrl(LLMProvider.LM_STUDIO);
     this.client = new OpenAI({
       apiKey: 'lm-studio', // LM Studio accepts any API key
-      baseURL: getProviderBaseUrl(LLMProvider.LM_STUDIO),
+      baseURL: this.baseUrl,
+      timeout: 5000, // 5 second timeout
     });
   }
 
   async getModels() {
     try {
+      // First, try to check if the server is reachable with a simple fetch
+      const healthCheck = await fetch(`${this.baseUrl}/models`, {
+        signal: AbortSignal.timeout(5000) // 5 second timeout
+      });
+      
+      if (!healthCheck.ok) {
+        throw new Error(`LM Studio server responded with status: ${healthCheck.status}`);
+      }
+
       const response = await this.client.models.list();
       return response.data.map((model) => ({
         id: model.id,
@@ -424,6 +459,18 @@ class LMStudioProvider implements LLMProviderClient {
       }));
     } catch (error) {
       console.error('Error fetching LM Studio models:', error);
+      
+      // Check if it's a connection error
+      if (error instanceof Error && (
+        error.message.includes('ECONNREFUSED') || 
+        error.message.includes('fetch failed') ||
+        error.message.includes('Connection error') ||
+        error.name === 'TimeoutError' ||
+        error.message.includes('request to http')
+      )) {
+        throw new Error('LM Studio server is not running or not accessible. Please start LM Studio, load a model, and ensure the local server is running on the configured port.');
+      }
+      
       throw new Error('Cannot connect to LM Studio. Is the server running?');
     }
   }
@@ -465,6 +512,15 @@ class LMStudioProvider implements LLMProviderClient {
       });
     } catch (error) {
       console.error('Error generating code with LM Studio:', error);
+      
+      if (error instanceof Error && (
+        error.message.includes('ECONNREFUSED') || 
+        error.message.includes('fetch failed') ||
+        error.name === 'TimeoutError'
+      )) {
+        throw new Error('LM Studio server is not running or not accessible. Please start LM Studio, load a model, and ensure the local server is running on the configured port.');
+      }
+      
       throw error;
     }
   }
