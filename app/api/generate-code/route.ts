@@ -24,19 +24,19 @@ export async function POST(request: NextRequest) {
     if (providerParam && Object.values(LLMProvider).includes(providerParam as LLMProvider)) {
       provider = providerParam as LLMProvider;
     } else {
-      // Use the default provider from environment variables or OpenRouter as fallback
-      provider = (process.env.DEFAULT_PROVIDER as LLMProvider) || LLMProvider.OPENROUTER;
+      // Use the default provider from environment variables or Gemini as fallback
+      provider = (process.env.DEFAULT_PROVIDER as LLMProvider) || LLMProvider.GEMINI;
     }
 
     console.log(`[DEBUG] Using provider: ${provider}`);
 
     // Validate provider configuration before creating client
     const providerEnvChecks: Record<string, { key?: string; base?: string; keyEnvVar?: string; baseEnvVar?: string; }> = {
-      [LLMProvider.OPENROUTER]: { 
-        key: process.env.OPENROUTER_API_KEY, 
-        base: process.env.OPENROUTER_API_BASE,
-        keyEnvVar: 'OPENROUTER_API_KEY',
-        baseEnvVar: 'OPENROUTER_API_BASE'
+      [LLMProvider.GEMINI]: { 
+        key: process.env.GEMINI_API_KEY, 
+        base: process.env.GEMINI_API_BASE,
+        keyEnvVar: 'GEMINI_API_KEY',
+        baseEnvVar: 'GEMINI_API_BASE'
       },
       [LLMProvider.DEEPSEEK]: { 
         key: process.env.DEEPSEEK_API_KEY, 
@@ -44,35 +44,11 @@ export async function POST(request: NextRequest) {
         keyEnvVar: 'DEEPSEEK_API_KEY',
         baseEnvVar: 'DEEPSEEK_API_BASE'
       },
-      [LLMProvider.OPENAI]: { 
-        key: process.env.OPENAI_API_KEY, 
-        base: process.env.OPENAI_API_BASE,
-        keyEnvVar: 'OPENAI_API_KEY',
-        baseEnvVar: 'OPENAI_API_BASE'
-      },
       [LLMProvider.OPENAI_COMPATIBLE]: { 
         key: process.env.OPENAI_COMPATIBLE_API_KEY, 
         base: process.env.OPENAI_COMPATIBLE_BASE_URL,
         keyEnvVar: 'OPENAI_COMPATIBLE_API_KEY',
         baseEnvVar: 'OPENAI_COMPATIBLE_BASE_URL'
-      },
-      [LLMProvider.ANTHROPIC]: { 
-        key: process.env.ANTHROPIC_API_KEY, 
-        base: process.env.ANTHROPIC_API_BASE,
-        keyEnvVar: 'ANTHROPIC_API_KEY',
-        baseEnvVar: 'ANTHROPIC_API_BASE'
-      },
-      [LLMProvider.GROQ]: { 
-        key: process.env.GROQ_API_KEY, 
-        base: process.env.GROQ_API_BASE,
-        keyEnvVar: 'GROQ_API_KEY',
-        baseEnvVar: 'GROQ_API_BASE'
-      },
-      [LLMProvider.TOGETHER]: { 
-        key: process.env.TOGETHER_API_KEY, 
-        base: process.env.TOGETHER_API_BASE,
-        keyEnvVar: 'TOGETHER_API_KEY',
-        baseEnvVar: 'TOGETHER_API_BASE'
       },
       [LLMProvider.OLLAMA]: { 
         base: process.env.OLLAMA_API_BASE,
@@ -81,30 +57,6 @@ export async function POST(request: NextRequest) {
       [LLMProvider.LM_STUDIO]: { 
         base: process.env.LM_STUDIO_API_BASE,
         baseEnvVar: 'LM_STUDIO_API_BASE'
-      },
-      [LLMProvider.MISTRAL]: { 
-        key: process.env.MISTRAL_API_KEY, 
-        base: process.env.MISTRAL_API_BASE,
-        keyEnvVar: 'MISTRAL_API_KEY',
-        baseEnvVar: 'MISTRAL_API_BASE'
-      },
-      [LLMProvider.COHERE]: { 
-        key: process.env.COHERE_API_KEY, 
-        base: process.env.COHERE_API_BASE,
-        keyEnvVar: 'COHERE_API_KEY',
-        baseEnvVar: 'COHERE_API_BASE'
-      },
-      [LLMProvider.GEMINI]: { 
-        key: process.env.GEMINI_API_KEY, 
-        base: process.env.GEMINI_API_BASE,
-        keyEnvVar: 'GEMINI_API_KEY',
-        baseEnvVar: 'GEMINI_API_BASE'
-      },
-      [LLMProvider.LAMINI]: { 
-        key: process.env.LAMINI_API_KEY, 
-        base: process.env.LAMINI_API_BASE,
-        keyEnvVar: 'LAMINI_API_KEY',
-        baseEnvVar: 'LAMINI_API_BASE'
       },
       [LLMProvider.CUSTOM]: { 
         key: process.env.CUSTOM_LLM_API_KEY, 
@@ -166,7 +118,7 @@ export async function POST(request: NextRequest) {
       
       // Handle Gemini-specific errors
       if (error.message.includes('Gemini') && error.message.includes('API key')) {
-        errorMessage = 'Google Gemini API key is not properly configured. Please set a valid GEMINI_API_KEY in your .env.local file or use a different provider.';
+        errorMessage = 'Google Gemini API key is not properly configured. Please set a valid GEMINI_API_KEY in your .env.local file.';
       }
     }
 

@@ -25,21 +25,28 @@ export async function GET(request: NextRequest) {
     // Check if required environment variables are set for the provider
     if (provider === LLMProvider.GEMINI && !process.env.GEMINI_API_KEY) {
       return NextResponse.json(
-        { error: "Cheia API pentru Google Gemini nu este configurată. Te rugăm să setezi GEMINI_API_KEY în .env.local." },
-        { status: 400 }
-      );
-    }
-
-    if (provider === LLMProvider.OPENROUTER && !process.env.OPENROUTER_API_KEY) {
-      return NextResponse.json(
-        { error: "Cheia API pentru OpenRouter nu este configurată. Te rugăm să setezi OPENROUTER_API_KEY în .env.local." },
+        { error: "Google Gemini API key is not configured. Please set GEMINI_API_KEY in your .env.local file." },
         { status: 400 }
       );
     }
 
     if (provider === LLMProvider.DEEPSEEK && !process.env.DEEPSEEK_API_KEY) {
       return NextResponse.json(
-        { error: "Cheia API pentru DeepSeek nu este configurată. Te rugăm să setezi DEEPSEEK_API_KEY în .env.local." },
+        { error: "DeepSeek API key is not configured. Please set DEEPSEEK_API_KEY in your .env.local file." },
+        { status: 400 }
+      );
+    }
+
+    if (provider === LLMProvider.OPENAI_COMPATIBLE && !process.env.OPENAI_COMPATIBLE_API_KEY) {
+      return NextResponse.json(
+        { error: "OpenAI Compatible API key is not configured. Please set OPENAI_COMPATIBLE_API_KEY in your .env.local file." },
+        { status: 400 }
+      );
+    }
+
+    if (provider === LLMProvider.CUSTOM && !process.env.CUSTOM_LLM_API_KEY) {
+      return NextResponse.json(
+        { error: "Custom API key is not configured. Please set CUSTOM_LLM_API_KEY in your .env.local file." },
         { status: 400 }
       );
     }

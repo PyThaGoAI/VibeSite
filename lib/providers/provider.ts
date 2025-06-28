@@ -13,6 +13,8 @@ export interface LLMProviderClient {
 // Factory function to create a provider client
 export function createProviderClient(provider: LLMProvider): LLMProviderClient {
   switch (provider) {
+    case LLMProvider.GEMINI:
+      return new GeminiProvider();
     case LLMProvider.DEEPSEEK:
       return new OpenAICompatibleProvider(LLMProvider.DEEPSEEK);
     case LLMProvider.OPENAI_COMPATIBLE:
@@ -21,104 +23,10 @@ export function createProviderClient(provider: LLMProvider): LLMProviderClient {
       return new OllamaProvider();
     case LLMProvider.LM_STUDIO:
       return new LMStudioProvider();
-    case LLMProvider.OPENROUTER: {
-      // DEBUG: loghează cheia și endpointul folosite pentru OpenRouter
-      const apiKey = getProviderApiKey(LLMProvider.OPENROUTER);
-      const baseURL = getProviderBaseUrl(LLMProvider.OPENROUTER);
-      console.log('[DEBUG][OPENROUTER] API KEY:', apiKey);
-      console.log('[DEBUG][OPENROUTER] BASE URL:', baseURL);
-      return new OpenAICompatibleProvider(LLMProvider.OPENROUTER);
-    }
-    case LLMProvider.GEMINI:
-      return new GeminiProvider();
+    case LLMProvider.CUSTOM:
+      return new OpenAICompatibleProvider(LLMProvider.CUSTOM);
     default:
       throw new Error(`Unsupported provider: ${provider}`);
-  }
-}
-
-// OpenAI-compatible provider (OpenAI, Kluster.ai, Mistral, etc.)
-class OpenAICompatibleProvider implements LLMProviderClient {
-  private client: OpenAI;
-  private provider: LLMProvider;
-
-  constructor(provider: LLMProvider) {
-    this.provider = provider;
-    const apiKey = getProviderApiKey(provider);
-    const baseURL = getProviderBaseUrl(provider);
-    
-    // Validate API key exists for cloud providers
-    if (!apiKey) {
-      throw new Error(`API key not found for provider ${provider}. Please configure the appropriate environment variable.`);
-    }
-
-    this.client = new OpenAI({
-      apiKey: apiKey,
-      baseURL: baseURL,
-    });
-  }
-
-  async getModels() {
-    try {
-      const response = await this.client.models.list();
-
-      // Remove duplicates based on model ID
-      const uniqueModels = Array.from(
-        new Map(response.data.map(model => [model.id, model])).values()
-      );
-
-      return uniqueModels.map((model) => ({
-        id: model.id,
-        name: model.id,
-      }));
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('401')) {
-        throw new Error(`Authentication failed for ${this.provider}. Please check your API key.`);
-      }
-      throw error;
-    }
-  }
-
-  async generateCode(prompt: string, model: string, customSystemPrompt?: string | null, maxTokens?: number) {
-    // Use custom system prompt if provided, otherwise use default
-    const systemPromptToUse = customSystemPrompt || SYSTEM_PROMPT;
-
-    try {
-      const stream = await this.client.chat.completions.create({
-        model,
-        messages: [
-          { role: 'system', content: systemPromptToUse },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: maxTokens || undefined, // Use maxTokens if provided, otherwise let the API decide
-        stream: true,
-      });
-
-      // Create a ReadableStream for the response
-      const textEncoder = new TextEncoder();
-      return new ReadableStream({
-        async start(controller) {
-          try {
-            // Process the stream from OpenAI
-            for await (const chunk of stream) {
-              // Extract the text from the chunk
-              const content = chunk.choices[0]?.delta?.content || '';
-
-              // Send the text to the client
-              controller.enqueue(textEncoder.encode(content));
-            }
-            controller.close();
-          } catch (error) {
-            console.error('Error in stream processing:', error);
-            controller.error(error);
-          }
-        },
-      });
-    } catch (error) {
-      if (error instanceof Error && error.message.includes('401')) {
-        throw new Error(`Authentication failed for ${this.provider}. Please check your API key.`);
-      }
-      throw error;
-    }
   }
 }
 
@@ -135,6 +43,9 @@ class GeminiProvider implements LLMProviderClient {
     if (!this.apiKey || this.apiKey.includes('your_') || this.apiKey.includes('_here')) {
       throw new Error('Google Gemini API key is not properly configured. Please set a valid GEMINI_API_KEY in your environment variables.');
     }
+
+    console.log('[DEBUG][GEMINI] API KEY:', this.apiKey);
+    console.log('[DEBUG][GEMINI] BASE URL:', this.baseUrl);
   }
 
   async getModels() {
@@ -284,6 +195,92 @@ class GeminiProvider implements LLMProviderClient {
         }
       }
       
+      throw error;
+    }
+  }
+}
+
+// OpenAI-compatible provider (DeepSeek, Custom APIs, etc.)
+class OpenAICompatibleProvider implements LLMProviderClient {
+  private client: OpenAI;
+  private provider: LLMProvider;
+
+  constructor(provider: LLMProvider) {
+    this.provider = provider;
+    const apiKey = getProviderApiKey(provider);
+    const baseURL = getProviderBaseUrl(provider);
+    
+    // Validate API key exists for cloud providers
+    if (!apiKey) {
+      throw new Error(`API key not found for provider ${provider}. Please configure the appropriate environment variable.`);
+    }
+
+    this.client = new OpenAI({
+      apiKey: apiKey,
+      baseURL: baseURL,
+    });
+  }
+
+  async getModels() {
+    try {
+      const response = await this.client.models.list();
+
+      // Remove duplicates based on model ID
+      const uniqueModels = Array.from(
+        new Map(response.data.map(model => [model.id, model])).values()
+      );
+
+      return uniqueModels.map((model) => ({
+        id: model.id,
+        name: model.id,
+      }));
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('401')) {
+        throw new Error(`Authentication failed for ${this.provider}. Please check your API key.`);
+      }
+      throw error;
+    }
+  }
+
+  async generateCode(prompt: string, model: string, customSystemPrompt?: string | null, maxTokens?: number) {
+    // Use custom system prompt if provided, otherwise use default
+    const systemPromptToUse = customSystemPrompt || SYSTEM_PROMPT;
+
+    try {
+      const stream = await this.client.chat.completions.create({
+        model,
+        messages: [
+          { role: 'system', content: systemPromptToUse },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: maxTokens || undefined, // Use maxTokens if provided, otherwise let the API decide
+        stream: true,
+      });
+
+      // Create a ReadableStream for the response
+      const textEncoder = new TextEncoder();
+      return new ReadableStream({
+        async start(controller) {
+          try {
+            // Process the stream from OpenAI
+            for await (const chunk of stream) {
+              // Extract the text from the chunk
+              const content = chunk.choices[0]?.delta?.content || '';
+
+              // Send the text to the client
+              controller.enqueue(textEncoder.encode(content));
+            }
+            controller.close();
+          } catch (error) {
+            console.error('Error in stream processing:', error);
+            controller.error(error);
+          }
+        },
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('401')) {
+        throw new Error(`Authentication failed for ${this.provider}. Please check your API key.`);
+      }
       throw error;
     }
   }
