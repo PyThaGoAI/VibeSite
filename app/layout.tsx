@@ -3,7 +3,11 @@ import "@/app/globals.css"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ 
+  subsets: ["latin"],
+  display: 'swap',
+  preload: true,
+})
 
 export const metadata = {
   title: "PythaGO AI - Ultra Premium Code Generator 2025",
@@ -14,8 +18,9 @@ export const metadata = {
   creator: 'PythaGO AI',
   publisher: 'PythaGO AI',
   robots: 'index, follow',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
   themeColor: '#8B5CF6',
+  colorScheme: 'dark',
 }
 
 export default function RootLayout({
@@ -24,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -32,13 +37,23 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
         <meta name="theme-color" content="#8B5CF6" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
       </head>
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-          {children}
+      <body className={`${inter.className} antialiased`} suppressHydrationWarning>
+        <ThemeProvider 
+          attribute="class" 
+          defaultTheme="dark" 
+          enableSystem={false} 
+          disableTransitionOnChange
+          forcedTheme="dark"
+        >
+          <div id="__next" suppressHydrationWarning>
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

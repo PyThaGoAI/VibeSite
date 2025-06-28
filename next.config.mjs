@@ -9,9 +9,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Disable problematic features that might cause invariant errors
   experimental: {
-    // Disable problematic features that might cause invariant errors
-    appDir: true,
+    // Force static generation to avoid client-side routing issues
+    forceSwcTransforms: true,
   },
   // Ensure proper handling of client components
   swcMinify: true,
@@ -19,8 +20,16 @@ const nextConfig = {
   compress: true,
   // Handle static optimization properly
   trailingSlash: false,
-  // Ensure proper hydration
+  // Disable strict mode to prevent double rendering issues
   reactStrictMode: false,
+  // Disable server components features that might conflict
+  serverComponentsExternalPackages: [],
+  // Ensure proper hydration
+  poweredByHeader: false,
+  // Optimize bundle
+  optimizeFonts: true,
+  // Disable problematic features
+  modularizeImports: {},
 }
 
 export default nextConfig

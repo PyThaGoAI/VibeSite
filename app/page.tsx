@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { LoadingScreen } from "@/components/loading-screen"
 import { WelcomeView } from "@/components/welcome-view"
 import { GenerationView } from "@/components/generation-view"
-import { ThinkingIndicator } from "@/components/thinking-indicator"
 import { toast, Toaster } from "sonner"
 
 export default function Home() {
@@ -25,7 +24,10 @@ export default function Home() {
 
   // Ensure component is mounted before rendering
   useEffect(() => {
-    setMounted(true)
+    const timer = setTimeout(() => {
+      setMounted(true)
+    }, 100)
+    return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
@@ -329,9 +331,13 @@ IMPORTANT: Apart from the initial <think>...</think> block, do NOT use markdown 
     }
   }
 
-  // Don't render anything until mounted
+  // Don't render anything until mounted to prevent hydration issues
   if (!mounted) {
-    return null
+    return (
+      <div className="min-h-screen w-full bg-background flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 animate-spin"></div>
+      </div>
+    )
   }
 
   if (isLoading) {
