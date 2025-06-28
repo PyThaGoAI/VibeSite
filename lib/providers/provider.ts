@@ -431,23 +431,3 @@ class LMStudioProvider implements LLMProviderClient {
     }
   }
 }
-
-export function getProviderApiKey(provider: LLMProvider): string | undefined {
-  switch (provider) {
-    case LLMProvider.OPENROUTER:
-      return process.env.OPENROUTER_API_KEY;
-    case LLMProvider.GEMINI:
-      return process.env.GEMINI_API_KEY;
-    // ... restul providerilor
-  }
-}
-
-export function getProviderBaseUrl(provider: LLMProvider): string | undefined {
-  switch (provider) {
-    case LLMProvider.OPENROUTER:
-      return process.env.OPENROUTER_API_BASE;
-    case LLMProvider.GEMINI:
-      return process.env.GEMINI_API_BASE;
-    // ... restul providerilor
-  }
-}
