@@ -19,6 +19,8 @@ export function createProviderClient(provider: LLMProvider): LLMProviderClient {
       return new OpenAICompatibleProvider(LLMProvider.DEEPSEEK);
     case LLMProvider.OPENAI_COMPATIBLE:
       return new OpenAICompatibleProvider(LLMProvider.OPENAI_COMPATIBLE);
+    case LLMProvider.OPENROUTER:
+      return new OpenAICompatibleProvider(LLMProvider.OPENROUTER);
     case LLMProvider.OLLAMA:
       return new OllamaProvider();
     case LLMProvider.LM_STUDIO:

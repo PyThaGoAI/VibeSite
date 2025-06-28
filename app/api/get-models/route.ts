@@ -44,6 +44,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (provider === LLMProvider.OPENROUTER && !process.env.OPENROUTER_API_KEY) {
+      return NextResponse.json(
+        { error: "OpenRouter API key is not configured. Please set OPENROUTER_API_KEY in your .env.local file." },
+        { status: 400 }
+      );
+    }
+
     if (provider === LLMProvider.CUSTOM && !process.env.CUSTOM_LLM_API_KEY) {
       return NextResponse.json(
         { error: "Custom API key is not configured. Please set CUSTOM_LLM_API_KEY in your .env.local file." },
