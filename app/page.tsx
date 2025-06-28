@@ -24,10 +24,7 @@ export default function Home() {
 
   // Ensure component is mounted before rendering
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setMounted(true)
-    }, 100)
-    return () => clearTimeout(timer)
+    setMounted(true)
   }, [])
 
   useEffect(() => {
@@ -333,11 +330,7 @@ IMPORTANT: Apart from the initial <think>...</think> block, do NOT use markdown 
 
   // Don't render anything until mounted to prevent hydration issues
   if (!mounted) {
-    return (
-      <div className="min-h-screen w-full bg-background flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 animate-spin"></div>
-      </div>
-    )
+    return null
   }
 
   if (isLoading) {
