@@ -59,10 +59,42 @@ export function WelcomeView({
     return () => clearTimeout(timer)
   }, [])
 
+  // Setează provider-ul implicit la încărcare
+  useEffect(() => {
+    const fetchDefaultProvider = async () => {
+      try {
+        const response = await fetch('/api/get-default-provider')
+        const data = await response.json()
+        
+        if (response.ok && data.defaultProvider) {
+          console.log('[DEBUG] Setting default provider:', data.defaultProvider)
+          setSelectedProvider(data.defaultProvider)
+        } else {
+          // Fallback la gemini dacă nu se poate obține provider-ul implicit
+          console.log('[DEBUG] Fallback to gemini provider')
+          setSelectedProvider("gemini")
+        }
+      } catch (error) {
+        console.error('Error fetching default provider:', error)
+        // Fallback la gemini în caz de eroare
+        setSelectedProvider("gemini")
+      }
+    }
+
+    // Doar dacă nu este deja setat un provider
+    if (!selectedProvider) {
+      fetchDefaultProvider()
+    }
+  }, [selectedProvider, setSelectedProvider])
+
   useEffect(() => {
     const fetchModels = async () => {
-      if (!selectedProvider) return;
+      if (!selectedProvider) {
+        console.log('[DEBUG] No provider selected, skipping model fetch')
+        return
+      }
 
+      console.log('[DEBUG] Fetching models for provider:', selectedProvider)
       setIsLoadingModels(true)
       setSelectedModel("")
       setModels([])
@@ -71,17 +103,22 @@ export function WelcomeView({
         const response = await fetch(`/api/get-models?provider=${selectedProvider}`)
         const data = await response.json()
 
+        console.log('[DEBUG] Models API response:', { ok: response.ok, status: response.status, data })
+
         if (!response.ok) {
           if (data && data.error) {
+            console.error('[DEBUG] API Error:', data.error)
             throw new Error(data.error)
           } else {
-            throw new Error('Error fetching models')
+            throw new Error(`HTTP ${response.status}: Error fetching models`)
           }
         }
 
+        console.log('[DEBUG] Successfully fetched models:', data)
         setModels(data)
         if (data.length > 0) {
           setSelectedModel(data[0].id)
+          console.log('[DEBUG] Auto-selected first model:', data[0].id)
         }
       } catch (error) {
         console.error('Error fetching models:', error)
@@ -139,10 +176,6 @@ export function WelcomeView({
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
-
-  useEffect(() => {
-    setSelectedProvider("gemini");
-  }, [setSelectedProvider]);
 
   const providerConfigs = {
     gemini: {

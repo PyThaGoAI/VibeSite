@@ -41,27 +41,39 @@ class GeminiProvider implements LLMProviderClient {
     this.apiKey = getProviderApiKey(LLMProvider.GEMINI) || '';
     this.baseUrl = getProviderBaseUrl(LLMProvider.GEMINI) || '';
     
+    console.log('[DEBUG][GEMINI] Constructor called');
+    console.log('[DEBUG][GEMINI] API KEY from env:', process.env.GEMINI_API_KEY);
+    console.log('[DEBUG][GEMINI] API KEY received:', this.apiKey);
+    console.log('[DEBUG][GEMINI] BASE URL:', this.baseUrl);
+    
     // Check for placeholder or invalid API key
     if (!this.apiKey || this.apiKey.includes('your_') || this.apiKey.includes('_here')) {
-      throw new Error('Google Gemini API key is not properly configured. Please set a valid GEMINI_API_KEY in your environment variables.');
+      console.error('[DEBUG][GEMINI] Invalid API key detected:', this.apiKey);
+      throw new Error('Google Gemini API key is not properly configured. Please set a valid GEMINI_API_KEY in your .env.local file.');
     }
 
-    console.log('[DEBUG][GEMINI] API KEY:', this.apiKey);
-    console.log('[DEBUG][GEMINI] BASE URL:', this.baseUrl);
+    console.log('[DEBUG][GEMINI] Provider initialized successfully');
   }
 
   async getModels() {
+    console.log('[DEBUG][GEMINI] getModels called');
     try {
-      const response = await fetch(`${this.baseUrl}/models?key=${this.apiKey}`);
+      const url = `${this.baseUrl}/models?key=${this.apiKey}`;
+      console.log('[DEBUG][GEMINI] Fetching models from:', url);
+      
+      const response = await fetch(url);
+      console.log('[DEBUG][GEMINI] Response status:', response.status);
       
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
+          console.error('[DEBUG][GEMINI] Authentication failed');
           throw new Error('Invalid Google Gemini API key. Please check your GEMINI_API_KEY configuration.');
         }
         throw new Error(`Error fetching Gemini models: ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log('[DEBUG][GEMINI] Raw API response:', data);
       
       // Filter only generative models that support generateContent
       const generativeModels = data.models?.filter((model: any) => 
@@ -69,12 +81,17 @@ class GeminiProvider implements LLMProviderClient {
         model.name.includes('gemini')
       ) || [];
 
-      return generativeModels.map((model: any) => ({
+      console.log('[DEBUG][GEMINI] Filtered models:', generativeModels);
+
+      const formattedModels = generativeModels.map((model: any) => ({
         id: model.name.replace('models/', ''), // Remove 'models/' prefix
         name: model.displayName || model.name.replace('models/', ''),
       }));
+
+      console.log('[DEBUG][GEMINI] Formatted models:', formattedModels);
+      return formattedModels;
     } catch (error) {
-      console.error('Error fetching Gemini models:', error);
+      console.error('[DEBUG][GEMINI] Error fetching models:', error);
       
       // If it's an authentication error, re-throw it
       if (error instanceof Error && (error.message.includes('Invalid') || error.message.includes('401') || error.message.includes('403'))) {
@@ -82,6 +99,7 @@ class GeminiProvider implements LLMProviderClient {
       }
       
       // Return default models if API call fails for other reasons
+      console.log('[DEBUG][GEMINI] Returning default models due to error');
       return [
         { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash (Experimental)' },
         { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
