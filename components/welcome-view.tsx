@@ -67,7 +67,7 @@ export function WelcomeView({
       setModels([])
 
       try {
-        const response = await fetch(`/api/get-models?provider=openrouter`)
+        const response = await fetch(`/api/get-models?provider=${selectedProvider}`)
         const data = await response.json()
 
         if (!response.ok) {
@@ -120,7 +120,7 @@ export function WelcomeView({
   }, [])
 
   useEffect(() => {
-    setSelectedProvider("openrouter");
+    setSelectedProvider("gemini");
   }, [setSelectedProvider]);
 
   return (
@@ -216,14 +216,49 @@ export function WelcomeView({
                   </div>
                   <span className="font-semibold text-sm sm:text-base">AI Provider</span>
                 </div>
-                <div className="w-full">
-                  {/* Șterge sau comentează acest bloc din grid */}
-                  {/* <ProviderSelector
-                    selectedProvider={selectedProvider}
-                    setSelectedProvider={setSelectedProvider}
-                    onProviderChange={() => {}}
-                  /> */}
-                </div>
+                <Select value={selectedProvider} onValueChange={setSelectedProvider}>
+                  <SelectTrigger className="input-premium h-10 sm:h-12 w-full">
+                    <SelectValue placeholder="Choose a provider..." />
+                  </SelectTrigger>
+                  <SelectContent className="glass-strong border-purple-500/20 w-full">
+                    <SelectItem value="gemini" className="focus:bg-purple-500/10">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-blue-500 to-purple-500"></div>
+                        <span>Google Gemini</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="openrouter" className="focus:bg-purple-500/10">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-green-500 to-blue-500"></div>
+                        <span>OpenRouter</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="deepseek" className="focus:bg-purple-500/10">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-purple-500 to-pink-500"></div>
+                        <span>DeepSeek</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="openai_compatible" className="focus:bg-purple-500/10">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-orange-500 to-red-500"></div>
+                        <span>Custom API</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="ollama" className="focus:bg-purple-500/10">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-gray-500 to-gray-700"></div>
+                        <span>Ollama (Local)</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="lm_studio" className="focus:bg-purple-500/10">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-indigo-500 to-purple-500"></div>
+                        <span>LM Studio (Local)</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Model Selection */}

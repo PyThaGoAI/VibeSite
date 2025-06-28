@@ -5,6 +5,7 @@ export enum LLMProvider {
   OLLAMA = 'ollama',
   LM_STUDIO = 'lm_studio',
   OPENROUTER = 'openrouter',
+  GEMINI = 'gemini',
 }
 
 // Provider configuration interface
@@ -68,6 +69,16 @@ export const PROVIDER_CONFIGS: Record<LLMProvider, ProviderConfig> = {
     defaultBaseUrl: 'https://openrouter.ai/api/v1',
     isLocal: false,
     examples: ['OpenRouter'],
+  },
+  [LLMProvider.GEMINI]: {
+    id: LLMProvider.GEMINI,
+    name: 'Google Gemini',
+    description: 'Google Gemini AI models',
+    baseUrlEnvVar: 'GEMINI_API_BASE',
+    apiKeyEnvVar: 'GEMINI_API_KEY',
+    defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+    isLocal: false,
+    examples: ['Gemini 2.0 Flash', 'Gemini Pro', 'Gemini Ultra'],
   },
 };
 

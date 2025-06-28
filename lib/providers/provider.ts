@@ -24,11 +24,13 @@ export function createProviderClient(provider: LLMProvider): LLMProviderClient {
     case LLMProvider.OPENROUTER: {
       // DEBUG: loghează cheia și endpointul folosite pentru OpenRouter
       const apiKey = getProviderApiKey(LLMProvider.OPENROUTER);
-const baseURL = getProviderBaseUrl(LLMProvider.OPENROUTER);
+      const baseURL = getProviderBaseUrl(LLMProvider.OPENROUTER);
       console.log('[DEBUG][OPENROUTER] API KEY:', apiKey);
       console.log('[DEBUG][OPENROUTER] BASE URL:', baseURL);
       return new OpenAICompatibleProvider(LLMProvider.OPENROUTER);
     }
+    case LLMProvider.GEMINI:
+      return new GeminiProvider();
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }
@@ -115,6 +117,152 @@ class OpenAICompatibleProvider implements LLMProviderClient {
       if (error instanceof Error && error.message.includes('401')) {
         throw new Error(`Authentication failed for ${this.provider}. Please check your API key.`);
       }
+      throw error;
+    }
+  }
+}
+
+// Google Gemini Provider implementation
+class GeminiProvider implements LLMProviderClient {
+  private apiKey: string;
+  private baseUrl: string;
+
+  constructor() {
+    this.apiKey = getProviderApiKey(LLMProvider.GEMINI) || '';
+    this.baseUrl = getProviderBaseUrl(LLMProvider.GEMINI) || '';
+    
+    if (!this.apiKey) {
+      throw new Error('Google Gemini API key not found. Please configure GEMINI_API_KEY in your environment variables.');
+    }
+  }
+
+  async getModels() {
+    try {
+      const response = await fetch(`${this.baseUrl}/models?key=${this.apiKey}`);
+      
+      if (!response.ok) {
+        throw new Error(`Error fetching Gemini models: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Filter only generative models that support generateContent
+      const generativeModels = data.models?.filter((model: any) => 
+        model.supportedGenerationMethods?.includes('generateContent') &&
+        model.name.includes('gemini')
+      ) || [];
+
+      return generativeModels.map((model: any) => ({
+        id: model.name.replace('models/', ''), // Remove 'models/' prefix
+        name: model.displayName || model.name.replace('models/', ''),
+      }));
+    } catch (error) {
+      console.error('Error fetching Gemini models:', error);
+      // Return default models if API call fails
+      return [
+        { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash (Experimental)' },
+        { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
+        { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
+      ];
+    }
+  }
+
+  async generateCode(prompt: string, model: string, customSystemPrompt?: string | null, maxTokens?: number) {
+    const systemPromptToUse = customSystemPrompt || SYSTEM_PROMPT;
+    
+    try {
+      const requestBody = {
+        contents: [
+          {
+            parts: [
+              {
+                text: `${systemPromptToUse}\n\nUser request: ${prompt}`
+              }
+            ]
+          }
+        ],
+        generationConfig: {
+          maxOutputTokens: maxTokens || 8192,
+          temperature: 0.7,
+        }
+      };
+
+      const response = await fetch(
+        `${this.baseUrl}/models/${model}:streamGenerateContent?key=${this.apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error generating code with Gemini: ${response.statusText}`);
+      }
+
+      if (!response.body) {
+        throw new Error('No response received from Gemini API');
+      }
+
+      // Create a ReadableStream for the response
+      const textEncoder = new TextEncoder();
+      return new ReadableStream({
+        async start(controller) {
+          const reader = response.body!.getReader();
+
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+
+              if (done) {
+                controller.close();
+                break;
+              }
+
+              // Convert the chunk to text
+              const chunk = new TextDecoder().decode(value);
+
+              try {
+                // Gemini returns JSON objects separated by line breaks
+                const lines = chunk.split('\n').filter(line => line.trim());
+
+                for (const line of lines) {
+                  if (line.trim()) {
+                    const data = JSON.parse(line);
+                    
+                    // Extract text from Gemini response structure
+                    if (data.candidates && data.candidates[0]?.content?.parts) {
+                      const text = data.candidates[0].content.parts
+                        .map((part: any) => part.text || '')
+                        .join('');
+                      
+                      if (text) {
+                        controller.enqueue(textEncoder.encode(text));
+                      }
+                    }
+                  }
+                }
+              } catch (e) {
+                // If parsing fails, try to extract any text content
+                const textMatch = chunk.match(/"text":\s*"([^"]+)"/g);
+                if (textMatch) {
+                  textMatch.forEach(match => {
+                    const text = match.replace(/"text":\s*"/, '').replace(/"$/, '');
+                    controller.enqueue(textEncoder.encode(text));
+                  });
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error reading Gemini stream:', error);
+            controller.error(error);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error generating code with Gemini:', error);
       throw error;
     }
   }
@@ -288,13 +436,18 @@ export function getProviderApiKey(provider: LLMProvider): string | undefined {
   switch (provider) {
     case LLMProvider.OPENROUTER:
       return process.env.OPENROUTER_API_KEY;
+    case LLMProvider.GEMINI:
+      return process.env.GEMINI_API_KEY;
     // ... restul providerilor
   }
 }
+
 export function getProviderBaseUrl(provider: LLMProvider): string | undefined {
   switch (provider) {
     case LLMProvider.OPENROUTER:
       return process.env.OPENROUTER_API_BASE;
+    case LLMProvider.GEMINI:
+      return process.env.GEMINI_API_BASE;
     // ... restul providerilor
   }
 }
