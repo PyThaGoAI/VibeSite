@@ -70,14 +70,14 @@ export function WelcomeView({
           console.log('[DEBUG] Setting default provider:', data.defaultProvider)
           setSelectedProvider(data.defaultProvider)
         } else {
-          // Fallback la gemini dacă nu se poate obține provider-ul implicit
-          console.log('[DEBUG] Fallback to gemini provider')
-          setSelectedProvider("gemini")
+          // Fallback la lm_studio dacă nu se poate obține provider-ul implicit
+          console.log('[DEBUG] Fallback to lm_studio provider')
+          setSelectedProvider("lm_studio")
         }
       } catch (error) {
         console.error('Error fetching default provider:', error)
-        // Fallback la gemini în caz de eroare
-        setSelectedProvider("gemini")
+        // Fallback la lm_studio în caz de eroare
+        setSelectedProvider("lm_studio")
       }
     }
 
@@ -108,6 +108,12 @@ export function WelcomeView({
         if (!response.ok) {
           if (data && data.error) {
             console.error('[DEBUG] API Error:', data.error)
+            
+            // Only show toast for non-configuration errors
+            if (!data.error.includes('not configured') && !data.error.includes('Please set')) {
+              toast.error(data.error)
+            }
+            
             throw new Error(data.error)
           } else {
             throw new Error(`HTTP ${response.status}: Error fetching models`)
@@ -125,10 +131,11 @@ export function WelcomeView({
         setModels([])
         setSelectedModel("")
 
+        // Only show user-facing error for non-configuration issues
         if (error instanceof Error) {
-          toast.error(error.message || 'Models could not be loaded. Please try again later.');
-        } else {
-          toast.error('Models could not be loaded. Please try again later.');
+          if (!error.message.includes('not configured') && !error.message.includes('Please set')) {
+            toast.error(error.message || 'Models could not be loaded. Please try again later.');
+          }
         }
       } finally {
         setIsLoadingModels(false)
