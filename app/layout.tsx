@@ -6,9 +6,16 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "PythaGO AI - Premium Code Generator",
-  description: "Transform your ideas into beautiful, functional websites using the power of artificial intelligence. Ultra-modern AI-powered development platform.",
-  generator: 'PythaGO AI v2.0'
+  title: "PythaGO AI - Ultra Premium Code Generator 2025",
+  description: "Transform your ideas into beautiful, functional websites using the power of artificial intelligence. Ultra-modern AI-powered development platform with premium design.",
+  generator: 'PythaGO AI v2025.1',
+  keywords: 'AI, code generation, web development, artificial intelligence, premium, modern',
+  authors: [{ name: 'PythaGO AI Team' }],
+  creator: 'PythaGO AI',
+  publisher: 'PythaGO AI',
+  robots: 'index, follow',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  themeColor: '#8B5CF6',
 }
 
 export default function RootLayout({
@@ -23,8 +30,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
         <meta name="theme-color" content="#8B5CF6" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>

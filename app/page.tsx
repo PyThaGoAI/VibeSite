@@ -13,23 +13,31 @@ export default function Home() {
   const [prompt, setPrompt] = useState("")
   const [selectedProvider, setSelectedProvider] = useState("")
   const [selectedModel, setSelectedModel] = useState("")
-  const [selectedSystemPrompt, setSelectedSystemPrompt] = useState("default") // New state for system prompt selection
+  const [selectedSystemPrompt, setSelectedSystemPrompt] = useState("default")
   const [customSystemPrompt, setCustomSystemPrompt] = useState("")
-  const [maxTokens, setMaxTokens] = useState<number | undefined>(undefined) // New state for max tokens
+  const [maxTokens, setMaxTokens] = useState<number | undefined>(undefined)
   const [generatedCode, setGeneratedCode] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [generationComplete, setGenerationComplete] = useState(false)
-  const [thinkingOutput, setThinkingOutput] = useState("") // For thinking model support
-  const [isThinking, setIsThinking] = useState(false) // Separate state for thinking status
+  const [thinkingOutput, setThinkingOutput] = useState("")
+  const [isThinking, setIsThinking] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Ensure component is mounted before rendering
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
+    if (!mounted) return
+    
     // Simulate loading time
     const timer = setTimeout(() => {
       setIsLoading(false)
     }, 1250)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [mounted])
 
   const handleGenerate = async () => {
     if (!prompt.trim() || !selectedModel || !selectedProvider) {
@@ -321,6 +329,11 @@ IMPORTANT: Apart from the initial <think>...</think> block, do NOT use markdown 
     }
   }
 
+  // Don't render anything until mounted
+  if (!mounted) {
+    return null
+  }
+
   if (isLoading) {
     return <LoadingScreen />
   }
@@ -329,7 +342,6 @@ IMPORTANT: Apart from the initial <think>...</think> block, do NOT use markdown 
     return (
       <>
         <Toaster position="top-right" />
-
         <GenerationView
           prompt={prompt}
           setPrompt={setPrompt}
