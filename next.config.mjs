@@ -19,15 +19,17 @@ const nextConfig = {
   experimental: {
     // Disable features that can cause hydration issues
     optimizePackageImports: [],
+    // Disable server components features that might conflict
+    serverComponentsExternalPackages: [],
   },
   // Ensure proper handling of client components
   swcMinify: true,
   // Optimize bundle
   optimizeFonts: true,
-  // Disable server components features that might conflict
-  serverComponentsExternalPackages: [],
   // Ensure proper hydration
   poweredByHeader: false,
+  // Add output configuration to help with hydration
+  output: 'standalone',
 }
 
 export default nextConfig
